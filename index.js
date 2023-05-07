@@ -18,7 +18,7 @@ const data = JSON.parse(configFile);
 
 if (data.DesktopShortcutPlaced === false) {
     ws.create(path.join(os.homedir(), "Desktop", "OSFR Launcher.lnk"), {
-        target: path.join(__dirname, "../../FreeRealmsLauncher.exe"),
+        target: path.join(__dirname, "../../launcher.exe"),
         desc: "A Free Realms launcher made by Lillious for the OSFR community",
         icon: path.join(__dirname, "../../resources/app/src/www/img/icon.ico"),
         admin: false,
