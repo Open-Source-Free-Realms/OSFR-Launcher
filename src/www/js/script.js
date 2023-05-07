@@ -109,8 +109,10 @@ function CheckRunning () {
             serverbtn.innerText = 'Start Server';
             serverbtn.style.color = '#dcdcdc';
             if (progressBarContainer.style.display != 'block') {
-                reinstallbtn.disabled = false;
-                uninstallbtn.disabled = false;
+                if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
+                    reinstallbtn.disabled = false;
+                    uninstallbtn.disabled = false;
+                }
             }
         }
     }).catch((err) => {
@@ -136,7 +138,7 @@ function CheckRunning () {
 
 setInterval(() => {
     CheckRunning();
-}, 500);
+}, 1000);
 
 const Notification = {
     show(mode, message) {
