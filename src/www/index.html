@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang='en'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+        <meta http-equiv='X-UA-Compatible' content='ie=edge'>
+        <title>Free Realms Launcher</title>
+        <!-- Preload Javascript -->
+        <link rel='preload' href='./js/script.js' as='script'>
+        <script defer src='./js/script.js'></script>
+
+        <!-- Preload CSS -->
+        <link rel='preload' href='./css/style.css' as='style'>
+        <link rel='stylesheet' href='./css/style.css'>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    </head>
+
+    <body>
+        <div id='titlebar'>
+            <div class='container'>
+                <div id='title'>Free Realms Launcher</div>
+                <div id='icons'>
+                    <button type='button' id='minimize' class='yellow'>🗕</button>
+                    <button type='button' id='maximize' class='green'>🗖</button>
+                    <button type='button' id='close' class='red'>🗙</button>
+                </div>
+            </div>
+        </div>
+        <!-- Sidebar -->
+        <div id="side-bar">
+            <p id="version">Version 2.0.0</p>
+            <div id="menuitems">
+                <button id="play" disabled>Play</button>
+                <button id="server" disabled>Start Server</button>
+                <button id="install" disabled>Install</button>
+                <button id="reinstall" disabled>Reinstall</button>
+                <button id="uninstall" disabled>Uninstall</button>
+                <p id="settings" class="material-symbols-outlined">settings</p>
+            </div>
+        </div>
+        <!-- Page Content -->
+        <div id='content'>
+            <div id="playerdetails">
+                <p>Username</p>
+                <input id="username" placeholder="Chatty"/>
+                <br>
+                <p>Server</p>
+                <input id="serverip" placeholder="127.0.0.1:20260"/>
+                <p>Gender / Race</p>
+                <div class="custom-select">
+                    <select name="genderrace" id="genderrace">
+                        <option value="0">Select</option>
+                        <option value="2">Female Human</option>
+                        <option value="3">Male Human</option>
+                        <option value="5">Female Pixie</option>
+                        <option value="4">Male Pixie</option>
+                    </select>
+                </div>
+            </div>
+            <div id="console">
+                <div id="clearconsole">✗</div>
+                <div id="console-content"></div>
+            </div>
+            <div id="progress-container">
+                <div id="progress"></div>
+                <div id="progress-text"></div>
+            </div>
+        </div>
+    </body>
+</html>

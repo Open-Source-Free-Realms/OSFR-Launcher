@@ -1,0 +1,22 @@
+{
+  "name": "launcher",
+  "version": "2.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "npm run clean && electron-packager . --platform=win32 --arch=x64 --out=release --overwrite",
+    "clean": "rimraf release/ && rimraf logs/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord-rpc": "^4.0.1",
+    "electron": "^24.2.0",
+    "electron-packager": "^17.1.1",
+    "extract-zip": "^2.0.1",
+    "request": "^2.88.2",
+    "windows-shortcuts": "^0.1.6"
+  }
+}
