@@ -1,6 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const DiscordRPC = require('discord-rpc');
-const crash = (err) => { console.error(`\x1b[31m${err}\x1b[0m`); process.exit(1); };
 const ws = require('windows-shortcuts');
 const os = require('os')
 const fs = require('fs');
@@ -17,11 +16,15 @@ const configFile = fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8');
 const data = JSON.parse(configFile);
 
 if (data.DesktopShortcutPlaced === false) {
+    if (fs.existsSync(path.join(os.homedir(), "Desktop", "OSFR Launcher.lnk"))) {
+        fs.unlinkSync(path.join(os.homedir(), "Desktop", "OSFR Launcher.lnk"));
+    }
     ws.create(path.join(os.homedir(), "Desktop", "OSFR Launcher.lnk"), {
         target: path.join(__dirname, "../../launcher.exe"),
         desc: "A Free Realms launcher made by Lillious for the OSFR community",
         icon: path.join(__dirname, "../../resources/app/src/www/img/icon.ico"),
         admin: false,
+        workingDir: path.join(__dirname, "../../"),
     }, (err) => {
         if (err) console.log(err);
     });
@@ -47,9 +50,9 @@ const createWindow = () => {
             spellcheck: false,
         },
         resizable: false,
+        backgroundColor: '#161b22',
     });
     win.loadFile('./src/www/index.html')
-    .catch((err) => { crash(err); });
 }
 
 app.whenReady().then(() => {
@@ -59,8 +62,7 @@ app.whenReady().then(() => {
             createWindow();
         }
     });
-})
-.catch((err) => { crash(err); });
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
@@ -100,7 +102,6 @@ async function setActivity() {
     details: `Hanging out in the launcher`,
     startTimestamp,
     largeImageKey: 'ofsr',
-    smallImageKey: 'ofsr',
     instance: false,
   });
 }

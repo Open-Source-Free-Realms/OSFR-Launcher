@@ -4,7 +4,6 @@ const path = require('path');
 const request = require('request');
 const extract = require('extract-zip');
 const { exec } = require('child_process');
-const crypto = require('crypto');
 const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
@@ -224,27 +223,29 @@ function showDownloadingProgress(received, total) {
 function download(options) {
     if (!options) return;
     Notification.show('information', 'Download started');
+    var received_bytes = 0;
+    var total_bytes = 0;
+    var outStream = fs.createWriteStream(`${options.temp}/${options.fileName}`);
     try {
         if (!fs.existsSync(options.temp)) {
             fs.mkdirSync(options.temp, { recursive: true });
         }
     } catch (err) {
         console.error(err);
+        reject(err);
     }
-    var received_bytes = 0;
-    var total_bytes = 0;
-    var outStream = fs.createWriteStream(`${options.temp}/${options.fileName}`);
     return new Promise((resolve, reject) => {
         request
             .get(options.url)
             .on('error', function(err) {
-                console.log(err);
                 reject(err);
             })
             .on('response', function(data) {
                 total_bytes = parseInt(data.headers['content-length']);
+                if (isNaN(total_bytes)) reject(err);
             })
             .on('data', function(chunk) {
+                if (isNaN(total_bytes)) reject(err);
                 received_bytes += chunk.length;
                 showDownloadingProgress(received_bytes, total_bytes);
             })
@@ -312,6 +313,8 @@ function install () {
         });
     }).catch((err) => {
         if (err) {
+            Notification.show('error', err);
+            installbtn.disabled = false;
             Notification.show('error', 'Failed to download server files');
         }
     }).finally(() => {
@@ -342,6 +345,8 @@ function install () {
             });
         }).catch((err) => {
             if (err) {
+                installbtn.disabled = false;
+                Notification.show('error', err);
                 Notification.show('error', 'Failed to download client files');
             }
         });
