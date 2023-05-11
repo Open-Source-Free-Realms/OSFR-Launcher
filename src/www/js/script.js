@@ -7,12 +7,64 @@ const { exec } = require('child_process');
 const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
-close.addEventListener('click', () => {
-    exec('taskkill /IM OSFRServer.exe /F', (err, stdout, stderr) => {
-        if (err) {
-            Notification.show('error', 'Failed to stop server');
+// Busy flag to prevent unwanted actions while the application is busy
+var busy = false;
+
+const Notification = {
+    show(mode, message, verbose) {
+        if (verbose) return log(mode, message);
+        log(mode, message);
+        const container = document.getElementById('content');
+        const NotificationContainer = document.createElement('div');
+        const NotificationContent = document.createElement('div');
+        NotificationContainer.classList.add('notification-bar');
+        NotificationContent.classList.add('notification-content');
+        NotificationContent.innerHTML = message;
+        NotificationContainer.appendChild(NotificationContent);
+        NotificationContainer.style.marginTop = `${50 * document.getElementsByClassName('notification-bar').length}px`;
+        switch (mode) {
+            case 'success':
+                NotificationContainer.style.borderRight = '4px solid #61c555';
+                break;
+            case 'error':
+                NotificationContainer.style.borderRight = '4px solid #ed6a5e';
+                break;
+            case 'information':
+                NotificationContainer.style.borderRight = '4px solid #3f78c4';
+                break;
+            case 'warn':
+                NotificationContainer.style.borderRight = '4px solid #f4c04e';
+                break;
+            default:
+                NotificationContainer.style.borderRight = '4px solid #3f78c4';
+                break;
         }
-        Notification.show('success', 'Server stopped');
+        container.appendChild(NotificationContainer);
+        this.clear(NotificationContainer);
+    },
+    clear(notification) {
+        setTimeout(() => {
+            const notifications = document.getElementsByClassName('notification-bar');
+            for (let i = 0; i < notifications.length; i++) {
+                notifications[i].style.marginTop = `${50 * i - 50}px`;
+            }
+            notification.remove();
+        }, 3000);
+    }
+}
+
+// Prevent abnormal closing of the application
+window.addEventListener('keydown', (e) => {
+    const { key, altKey } = e;
+    if (key === 'F4' && altKey) {
+        e.preventDefault();   
+        Notification.show('warn', 'User attempted to close the application abnormally', true);
+    }
+});
+close.addEventListener('click', () => {
+    if (busy) return Notification.show('error', 'Application is busy, please wait');
+    exec('taskkill /IM OSFRServer.exe /F', (err, stdout, stderr) => {
+        Notification.show('information', 'Application has been closed peacefully', true);
         ipcRenderer.send('close');
     });
 });
@@ -139,48 +191,6 @@ setInterval(() => {
     CheckRunning();
 }, 1000);
 
-const Notification = {
-    show(mode, message) {
-        log(mode, message);
-        const container = document.getElementById('content');
-        const NotificationContainer = document.createElement('div');
-        const NotificationContent = document.createElement('div');
-        NotificationContainer.classList.add('notification-bar');
-        NotificationContent.classList.add('notification-content');
-        NotificationContent.innerHTML = message;
-        NotificationContainer.appendChild(NotificationContent);
-        NotificationContainer.style.marginTop = `${50 * document.getElementsByClassName('notification-bar').length}px`;
-        switch (mode) {
-            case 'success':
-                NotificationContainer.style.borderRight = '4px solid #61c555';
-                break;
-            case 'error':
-                NotificationContainer.style.borderRight = '4px solid #ed6a5e';
-                break;
-            case 'information':
-                NotificationContainer.style.borderRight = '4px solid #3f78c4';
-                break;
-            case 'warn':
-                NotificationContainer.style.borderRight = '4px solid #f4c04e';
-                break;
-            default:
-                NotificationContainer.style.borderRight = '4px solid #3f78c4';
-                break;
-        }
-        container.appendChild(NotificationContainer);
-        this.clear(NotificationContainer);
-    },
-    clear(notification) {
-        setTimeout(() => {
-            const notifications = document.getElementsByClassName('notification-bar');
-            for (let i = 0; i < notifications.length; i++) {
-                notifications[i].style.marginTop = `${50 * i - 50}px`;
-            }
-            notification.remove();
-        }, 3000);
-    }
-}
-
 function log(mode, message) {
     if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs'))) {
         fs.mkdirSync(path.join(__dirname, '..', '..', 'logs'), { recursive: true });
@@ -188,7 +198,7 @@ function log(mode, message) {
 
     fs.appendFileSync(path.join(__dirname, '..', '..', 'logs/log.txt'), `${new Date().toLocaleString()} [${mode.toUpperCase()}] ${message}\n`, (err) => {
         if (err) {
-            console.error(err);
+            Notification.show('error', 'Failed to write to log file');
         }
     });
 }
@@ -196,6 +206,7 @@ function log(mode, message) {
 // Porgress bar controls
 const ProgressBar = {
     show() {
+        busy = true;
         progressBarContainer.style.display = 'block';
     },
     hide() {
@@ -282,9 +293,11 @@ uninstallbtn.addEventListener('click', async () => {
 });
 
 function install () {
+    busy = true;
     if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
         Notification.show('error', 'An installation already exists');
         installbtn.disabled = true;
+        busy = false;
         return;
     }
     disableAll();
@@ -296,6 +309,7 @@ function install () {
     }).then(() => {
         Notification.show('success', 'Server download complete');
         Notification.show('information', 'Extracting Server files');
+        busy = true;
         File.extract('./temp_server/Server.zip', path.join(__dirname, '..', '..'))
         .then(() => {
             Notification.show('success', 'Extraction complete');
@@ -308,6 +322,7 @@ function install () {
                 if (err) {
                     Notification.show('error', 'Failed to remove temporary files');
                 }
+                busy = false;
             });
             serverbtn.disabled = false;
         });
@@ -316,9 +331,11 @@ function install () {
             Notification.show('error', err);
             installbtn.disabled = false;
             Notification.show('error', 'Failed to download server files');
+            busy = false;
         }
     }).finally(() => {
         // Download client files
+        busy = true;
         download({
             url: 'https://files.lilliousnetworks.com/Client.zip',
             fileName: './Client.zip',
@@ -326,9 +343,11 @@ function install () {
         }).then(() => {
             Notification.show('success', 'Client download complete');
             Notification.show('information', 'Extracting client files');
+            busy = true;
             File.extract('./temp_client/Client.zip', path.join(__dirname, '..', '..'))
             .then(() => {
                 Notification.show('success', 'Extraction complete');
+                busy = false;
             }).catch((err) => {
                 if (err) {
                     Notification.show('error', 'Failed to extract client files');
@@ -338,6 +357,7 @@ function install () {
                     if (err) {
                         Notification.show('error', 'Failed to remove temporary files');
                     }
+                    busy = false;
                 });
                 playbtn.disabled = false;
                 reinstallbtn.disabled = false;
@@ -346,8 +366,8 @@ function install () {
         }).catch((err) => {
             if (err) {
                 installbtn.disabled = false;
-                Notification.show('error', err);
                 Notification.show('error', 'Failed to download client files');
+                busy = false;
             }
         });
     });
@@ -358,7 +378,7 @@ function reinstall () {
         install();
     }).catch((err) => {
         if (err) {
-            console.log(err);
+            // Do nothing if uninstall fails because it will be handled by the uninstall function
         }
     });
 }
@@ -393,7 +413,8 @@ serverbtn.addEventListener('click', () => {
             cwd: path.join(__dirname, '..', '..', 'Server')
         }, (err, stdout, stderr) => {});
         process.stderr.on('data', (data) => {
-            console.log(data);
+            Notification.show('error', `An error occured, check logs for more information`);
+            Notification.show('error', data, true);
         });
         process.stdout.on('data', (data) => {
             console.log(data);
@@ -418,7 +439,7 @@ serverbtn.addEventListener('click', () => {
             }
         });
         process.on('error', (err) => {
-            console.log(err);
+            Notification.show('error', err, true);
         });
     } else if (serverbtn.innerText == 'Stop Server') {
         exec('taskkill /IM OSFRServer.exe /F', (err, stdout, stderr) => {
@@ -450,11 +471,11 @@ playbtn.addEventListener('click', () => {
         cwd: path.join(__dirname, '..', '..', 'Client')
     }, (err, stdout, stderr) => {
         if (err) {
-            console.log(err);
+            Notification.show('error', err, true);
         }
     });
     process.stderr.on('data', (data) => {
-        console.log(data);
+        Notification.show('error', data, true);
     });
     process.stdout.on('data', (data) => {
         console.log(data);

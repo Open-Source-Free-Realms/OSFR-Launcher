@@ -23,7 +23,11 @@ html {
     scroll-behavior: smooth;
 }
 body {
-    background: #161b22;
+    background: url(../img/background.png);
+    background-size:calc(100% + 17px) calc(100% + 17px);
+    background-position: -8px -8px;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     font-family: RooneySans;
     font-size: 14px;
     line-height: 1.5;
@@ -147,9 +151,10 @@ button:not(#minimize, #maximize, #close) {
 }
 button:not(#minimize, #maximize, #close, :disabled):hover {
     background: #2b313b;
+    background: rgba(24, 31, 39, 0.5);
 }
 button:not(#minimize, #maximize, #close, :disabled):active {
-    background: #1e2229;
+    background: rgba(24, 31, 39, 0.6);
 }
 button:not(#minimize, #maximize, #close):disabled {
     opacity: 0.5;
@@ -162,8 +167,8 @@ button:not(#minimize, #maximize, #close):disabled {
     top: 38px;
     bottom: 0;
     width: 200px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-    background: #181f27;
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.5);
+    background: rgba(24, 31, 39, 0.5);
 }
 #side-bar button {
     width: 100%;
@@ -203,13 +208,15 @@ button:not(#minimize, #maximize, #close):disabled {
     right: 0;
     height: 22px;
     background: #181f27;
+    background: rgba(24, 31, 39, 0.5);
     z-index: 1000;
     box-shadow: 3px 0px 5px rgba(0, 0, 0, 0.5);
-    border-left: 1px solid rgba(0, 0, 0, 0.3);
 }
 #progress {
     height: 100%;
     background: #61c555;
+    background: linear-gradient(to right, #61c555, #238636);
+    opacity: 0.8;
     width: 0;
     transition: 0.1s;
 }
@@ -256,8 +263,8 @@ button:not(#minimize, #maximize, #close):disabled {
     left: 10px;
     right: 10px;
     height: 200px;
-    background: #181f27;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    background: rgba(24, 31, 39, 0.5);
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
 }
 #console #console-content {
     color: #dcdcdc;
@@ -290,10 +297,12 @@ button:not(#minimize, #maximize, #close):disabled {
 input {
     transition: ease-in-out 0.1s;
     outline: none;
-    background: transparent;
-    border: 1px solid #2a3038;
+    background: rgba(24, 31, 39, 0.5);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(36, 46, 59, 0.5);
     color: #dcdcdc;
     padding: 8px;
+    height: 21px;
 }
 input:hover:not(:focus) {
     border: 1px solid #434c58;
@@ -312,11 +321,13 @@ input:focus {
 
 .custom-select {
     position: relative;
-    font-family: Arial;
-    border: 1px solid #2a3038;
+    border: 1px solid rgba(36, 46, 59, 0.5);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+    background: rgba(24, 31, 39, 0.5);
 }
 
 .custom-select:hover:not(:focus) {
+    transition: ease-in-out 0.1s;
     border: 1px solid #434c58;
 }
 .custom-select select {
@@ -348,9 +359,9 @@ input:focus {
 }
 .select-items {
     position: absolute;
-    background: #161b22;
-    border-left: 1px solid #2a3038;
-    border-right: 1px solid #2a3038;
+    background: rgba(24, 31, 39, 0.5);
+    border-left: 1px solid rgba(36, 46, 59, 0.5);
+    border-right: 1px solid rgba(36, 46, 59, 0.5);
     top: 100%;
     left: 0;
     right: 0;
@@ -360,7 +371,8 @@ input:focus {
     display: none;
 }
 .select-items div:hover, .same-as-selected {
-    background: #181f27;
+    transition: ease-in-out 0.1s;
+    background: rgba(63, 121, 196, 0.3)
 }
 
 /* fallback */
