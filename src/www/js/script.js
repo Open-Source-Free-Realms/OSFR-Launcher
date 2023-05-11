@@ -1,5 +1,6 @@
 const { ipcRenderer } = require('electron');
 const fs = require('fs');
+const fse = require('fs-extra');
 const path = require('path');
 const request = require('request');
 const extract = require('extract-zip');
@@ -7,6 +8,10 @@ const { exec } = require('child_process');
 const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
+
+const package = fs.readFileSync(path.join(__dirname, '..','..', 'package.json'), 'utf8');
+const data = JSON.parse(package);
+const version = data.version;
 // Busy flag to prevent unwanted actions while the application is busy
 var busy = false;
 
@@ -52,6 +57,8 @@ const Notification = {
         }, 3000);
     }
 }
+
+Notification.show("information", "Checking for updates...");
 
 // Prevent abnormal closing of the application
 window.addEventListener('keydown', (e) => {
@@ -278,6 +285,81 @@ const File = {
         }
     }
 }
+
+setTimeout(() => {
+    fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
+        .then(res => res.json())
+            .then(json => {
+                if (json.tag_name !== version) {
+                    Notification.show("information", "Downloading update...");
+                    download({
+                        url: json.assets[0].browser_download_url,
+                        fileName: "update.zip",
+                        temp: "./temp-update",
+                    }).then(() => {
+                        Notification.show("success", "Update download complete");
+                        Notification.show("information", "Extracting update...");
+                        busy = true;
+                        File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
+                        .then(() => {
+                            Notification.show("success", "Extraction complete");
+                            const src = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'src');
+                            const dest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'src');
+                            const packageSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'package.json');
+                            const packageDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'package.json');
+                            const mainSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'index.js');
+                            const mainDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'index.js');
+
+                            // Copy src to dest
+                            try {
+                                fse.copySync(src, dest, { overwrite: true });
+                            } catch (err) {
+                                Notification.show("error", "Failed to copy update");
+                            }
+
+                            // Copy package.json to dest
+                            try {
+                                fse.copySync(packageSrc, packageDest, { overwrite: true });
+                            } catch (err) {
+                                Notification.show("error", "Failed to copy update");
+                            }
+
+                            // Copy index.js to dest
+                            try {
+                                fse.copySync(mainSrc, mainDest, { overwrite: true });
+                            } catch (err) {
+                                Notification.show("error", "Failed to copy update");
+                            }
+                            
+                            Notification.show("information", "Update complete! Restarting...");
+                            setTimeout(() => {
+                                ipcRenderer.send('restart');
+                            }, 3000);
+                        }).catch((err) => {
+                            Notification.show("error", "Failed to extract update");
+                        }).finally(() => {
+                            fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), { recursive: true, force: true }, (err) => {
+                                if (err) {
+                                    Notification.show("error", "Failed to remove temporary files");
+                                }
+                            });
+                            fs.rm(path.join(__dirname, '..', '..', '..', '..', 'temp-update'), { recursive: true, force: true }, (err) => {
+                                if (err) {
+                                    Notification.show("error", "Failed to remove temporary files");
+                                }
+                            });
+                            busy = false;
+                        });
+                    }).catch((err) => {
+                        Notification.show("error", "Update download failed");
+                        busy = false;
+                    });
+                } else {
+                    Notification.show("information", "No updates found.");
+                }
+            }
+    );
+}, 2000);
 
 installbtn.addEventListener('click', async () => {
     install();

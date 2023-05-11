@@ -8,6 +8,14 @@
       {
         "select-name": "off"
       }
+    ],
+    "compat-api/css": [
+      "default",
+      {
+        "ignore": [
+          "rotate"
+        ]
+      }
     ]
   }
 }

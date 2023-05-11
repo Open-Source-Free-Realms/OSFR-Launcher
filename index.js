@@ -1,18 +1,18 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, autoUpdater, dialog } = require('electron');
 const DiscordRPC = require('discord-rpc');
 const ws = require('windows-shortcuts');
 const os = require('os')
 const fs = require('fs');
 const path = require('path');
 
-if (!fs.existsSync(path.join(__dirname, 'config.json'))) {
-    fs.writeFileSync(path.join(__dirname, 'config.json'),
+if (!fs.existsSync(path.join(__dirname, 'settings.json'))) {
+    fs.writeFileSync(path.join(__dirname, 'settings.json'),
         JSON.stringify({
-            DesktopShortcutPlaced: false,
+            DesktopShortcutPlaced: false
         }, null, 4));
 }
 
-const configFile = fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8');
+const configFile = fs.readFileSync(path.join(__dirname, 'settings.json'), 'utf8');
 const data = JSON.parse(configFile);
 
 if (data.DesktopShortcutPlaced === false) {
@@ -31,7 +31,7 @@ if (data.DesktopShortcutPlaced === false) {
     data.DesktopShortcutPlaced = true;
 }
 
-fs.writeFileSync(path.join(__dirname, 'config.json'), JSON.stringify(data, null, 4));
+fs.writeFileSync(path.join(__dirname, 'settings.json'), JSON.stringify(data, null, 4));
 
 let win;
 const createWindow = () => {
@@ -72,6 +72,11 @@ app.on('window-all-closed', () => {
 
 ipcMain.on('close', () => {
     app.quit();
+});
+
+ipcMain.on('restart', () => {
+    app.relaunch();
+    app.exit();
 });
 
 ipcMain.on('minimize', () => {
