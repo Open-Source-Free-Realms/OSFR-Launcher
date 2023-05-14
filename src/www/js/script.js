@@ -8,7 +8,7 @@ const { exec } = require('child_process');
 const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
-
+const os = require('os');
 const package = fs.readFileSync(path.join(__dirname, '..','..', 'package.json'), 'utf8');
 const data = JSON.parse(package);
 const version = data.version;
@@ -196,7 +196,7 @@ function CheckRunning () {
 
 setInterval(() => {
     CheckRunning();
-}, 1000);
+}, 5000);
 
 function log(mode, message) {
     if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs'))) {
@@ -286,84 +286,158 @@ const File = {
     }
 }
 
-setTimeout(() => {
-    fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
-        .then(res => res.json())
-            .then(json => {
-                if (json.tag_name !== version) {
-                    Notification.show("information", "Downloading update...");
-                    download({
-                        url: json.assets[0].browser_download_url,
-                        fileName: "update.zip",
-                        temp: "./temp-update",
-                    }).then(() => {
-                        Notification.show("success", "Update download complete");
-                        Notification.show("information", "Extracting update...");
-                        busy = true;
-                        File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
-                        .then(() => {
-                            Notification.show("success", "Extraction complete");
-                            const src = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'src');
-                            const dest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'src');
-                            const packageSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'package.json');
-                            const packageDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'package.json');
-                            const mainSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'index.js');
-                            const mainDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'index.js');
-
-                            // Copy src to dest
-                            try {
-                                fse.copySync(src, dest, { overwrite: true });
-                            } catch (err) {
-                                Notification.show("error", "Failed to copy update");
-                            }
-
-                            // Copy package.json to dest
-                            try {
-                                fse.copySync(packageSrc, packageDest, { overwrite: true });
-                            } catch (err) {
-                                Notification.show("error", "Failed to copy update");
-                            }
-
-                            // Copy index.js to dest
-                            try {
-                                fse.copySync(mainSrc, mainDest, { overwrite: true });
-                            } catch (err) {
-                                Notification.show("error", "Failed to copy update");
-                            }
-                            
-                            Notification.show("information", "Update complete! Restarting...");
-                            setTimeout(() => {
-                                ipcRenderer.send('restart');
-                            }, 3000);
-                        }).catch((err) => {
-                            Notification.show("error", "Failed to extract update");
-                        }).finally(() => {
-                            fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), { recursive: true, force: true }, (err) => {
-                                if (err) {
-                                    Notification.show("error", "Failed to remove temporary files");
-                                }
-                            });
-                            fs.rm(path.join(__dirname, '..', '..', '..', '..', 'temp-update'), { recursive: true, force: true }, (err) => {
-                                if (err) {
-                                    Notification.show("error", "Failed to remove temporary files");
-                                }
-                            });
-                            busy = false;
-                        });
+// Check for updates
+fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
+    .then(res => res.json())
+        .then(json => {
+            if (json.tag_name !== version) {
+                Notification.show("information", "Downloading update...");
+                download({
+                    url: json.assets[0].browser_download_url,
+                    fileName: "update.zip",
+                    temp: "./temp-update",
+                }).then(() => {
+                    Notification.show("success", "Update download complete");
+                    Notification.show("information", "Extracting update...");
+                    busy = true;
+                    File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
+                    .then(() => {
+                        Notification.show("success", "Extraction complete");
+                        const src = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'src');
+                        const dest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'src');
+                        const packageSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'package.json');
+                        const packageDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'package.json');
+                        const mainSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'index.js');
+                        const mainDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'index.js');
+                        try {
+                            fse.copySync(src, dest, { overwrite: true });
+                        } catch (err) {
+                            Notification.show("error", "Failed to copy update");
+                        }
+                        try {
+                            fse.copySync(packageSrc, packageDest, { overwrite: true });
+                        } catch (err) {
+                            Notification.show("error", "Failed to copy update");
+                        }
+                        try {
+                            fse.copySync(mainSrc, mainDest, { overwrite: true });
+                        } catch (err) {
+                            Notification.show("error", "Failed to copy update");
+                        }
+                        
+                        Notification.show("information", "Update complete! Restarting...");
+                        setTimeout(() => {
+                            ipcRenderer.send('restart');
+                        }, 3000);
                     }).catch((err) => {
-                        Notification.show("error", "Update download failed");
+                        Notification.show("error", "Failed to extract update");
+                    }).finally(() => {
+                        fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), { recursive: true, force: true }, (err) => {
+                            if (err) {
+                                Notification.show("error", "Failed to remove temporary files");
+                            }
+                        });
+                        fs.rm(path.join(__dirname, '..', '..', '..', '..', 'temp-update'), { recursive: true, force: true }, (err) => {
+                            if (err) {
+                                Notification.show("error", "Failed to remove temporary files");
+                            }
+                        });
                         busy = false;
                     });
-                } else {
-                    Notification.show("information", "No updates found.");
-                }
+                }).catch((err) => {
+                    Notification.show("error", "Update download failed");
+                    busy = false;
+                });
+            } else {
+                Notification.show("information", "No updates found.");
             }
-    );
-}, 2000);
+        }
+);
 
 installbtn.addEventListener('click', async () => {
-    install();
+    installbtn.disabled = true;
+    let exists = fs.existsSync(path.join(os.homedir(), '..', '..', 'Windows', 'System32', 'D3DX9_43.dll'));
+    if (!exists) {
+        directx()
+        .then(() => {
+            install();
+        }).catch((err) => {
+            if (err) {
+                busy = false;
+                Notification.show('error', 'Failed to install DirectX9');
+                installbtn.disabled = false;
+            }
+        }).finally(() => {
+            rm(path.join(os.tmpdir(), 'directx_Jun2010_redist.exe'), { recursive: true, force: true }, (err) => {
+                if (err) {
+                    Notification.show('error', 'Failed to remove temporary files');
+                }
+            });
+            rm(path.join(os.tmpdir(), 'directx9'), { recursive: true, force: true }, (err) => {
+                if (err) {
+                    Notification.show('error', 'Failed to remove temporary files');
+                }
+            });
+        });
+    } else {
+        install();
+    }
 });
+
+function directx () 
+{
+    return new Promise((resolve, reject) => {
+        download({
+            url: 'https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe',
+            fileName: 'directx_Jun2010_redist.exe',
+            temp: os.tmpdir()
+        }).then(() => {
+            const args = `/Q /T:`.replace(/\\/g, '/');
+            const command = `${os.tmpdir()}/directx_Jun2010_redist.exe ${args}${os.tmpdir()}/directx9`;
+            const process = exec(command, {
+                cwd: os.tmpdir()
+            }, (err) => {
+                if (err) {
+                    Notification.show('error', err, true);
+                    reject(err);
+                }
+            });
+
+            process.stderr.on('data', (data) => {
+                Notification.show('error', data, true);
+                reject();
+            });
+
+            process.on('exit', (code) => {
+                if (code == 0) {
+                    const process = exec(`${os.tmpdir()}/directx9/DXSETUP.exe`, {
+                        cwd: os.tmpdir()
+                    }, (err) => {
+                        if (err) {
+                            Notification.show('error', err, true);
+                            reject(err);
+                        }
+                    });
+                    process.stderr.on('data', (data) => {
+                        Notification.show('error', data, true);
+                        reject();
+                    });
+                    process.on('exit', (code) => {
+                        if (code == 0) {
+                            resolve();
+                        } else {
+                            Notification.show('error', 'Failed to install DirectX9');
+                            reject();
+                        }
+                    });
+                } else {
+                    Notification.show('error', 'Failed to install DirectX9');
+                    reject();
+                }
+            });
+        });
+    });
+}
 
 reinstallbtn.addEventListener('click', async () => {
     reinstall();
@@ -387,12 +461,12 @@ function install () {
     download({
         url: 'https://files.lilliousnetworks.com/Server.zip',
         fileName: 'Server.zip',
-        temp: './temp_server'
+        temp: `${os.tmpdir()}/osfrserver`
     }).then(() => {
         Notification.show('success', 'Server download complete');
         Notification.show('information', 'Extracting Server files');
         busy = true;
-        File.extract('./temp_server/Server.zip', path.join(__dirname, '..', '..'))
+        File.extract(`${os.tmpdir()}/osfrserver/Server.zip`, path.join(__dirname, '..', '..'))
         .then(() => {
             Notification.show('success', 'Extraction complete');
         }).catch((err) => {
@@ -400,7 +474,7 @@ function install () {
                 Notification.show('error', 'Failed to extract server files');
             }
         }).finally(() => {
-            fs.rm('./temp_server', { recursive: true, force: true }, (err) => {
+            fs.rm(`${os.tmpdir()}/osfrserver`, { recursive: true, force: true }, (err) => {
                 if (err) {
                     Notification.show('error', 'Failed to remove temporary files');
                 }
@@ -421,12 +495,12 @@ function install () {
         download({
             url: 'https://files.lilliousnetworks.com/Client.zip',
             fileName: './Client.zip',
-            temp: './temp_client'
+            temp: `${os.tmpdir()}/osfrclient`
         }).then(() => {
             Notification.show('success', 'Client download complete');
             Notification.show('information', 'Extracting client files');
             busy = true;
-            File.extract('./temp_client/Client.zip', path.join(__dirname, '..', '..'))
+            File.extract(`${os.tmpdir()}/osfrclient/Client.zip`, path.join(__dirname, '..', '..'))
             .then(() => {
                 Notification.show('success', 'Extraction complete');
                 busy = false;
@@ -435,7 +509,7 @@ function install () {
                     Notification.show('error', 'Failed to extract client files');
                 }
             }).finally(() => {
-                fs.rm('./temp_client', { recursive: true, force: true }, (err) => {
+                fs.rm(`${os.tmpdir()}/osfrclient`, { recursive: true, force: true }, (err) => {
                     if (err) {
                         Notification.show('error', 'Failed to remove temporary files');
                     }
