@@ -152,35 +152,33 @@ function checkClient() {
     });
 }
 
+function getTaskList() {
+    return new Promise((resolve, reject) => {
+        exec('tasklist', (err, stdout) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(stdout);
+        });
+    });
+}
 
-CheckRunning();
-
-function CheckRunning () {
-    checkServer().then((running) => {
-        if (running) {
+function CheckRunningTasks () {
+    getTaskList().then((stdout) => {
+        if (stdout.includes('OSFRServer.exe')) {
             serverbtn.innerText = 'Stop Server';
             serverbtn.style.color = '#ed6a5e';
-            consoleContainer.style.display = 'block';
             reinstallbtn.disabled = true;
             uninstallbtn.disabled = true;
         } else {
             serverbtn.innerText = 'Start Server';
             serverbtn.style.color = '#dcdcdc';
-            if (progressBarContainer.style.display != 'block') {
-                if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
-                    reinstallbtn.disabled = false;
-                    uninstallbtn.disabled = false;
-                }
+            if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
+                reinstallbtn.disabled = false;
+                uninstallbtn.disabled = false;
             }
         }
-    }).catch((err) => {
-        if (err) {
-            console.error(err);
-        }
-    });
-
-    checkClient().then((running) => {
-        if (running) {
+        if (stdout.includes('FreeRealms.exe')) {
             playbtn.innerText = 'Playing';
             playbtn.style.color = '#3f78c4';
         } else {
@@ -195,7 +193,7 @@ function CheckRunning () {
 }
 
 setInterval(() => {
-    CheckRunning();
+    CheckRunningTasks();
 }, 5000);
 
 function log(mode, message) {
@@ -487,6 +485,7 @@ function install () {
             Notification.show('error', err);
             installbtn.disabled = false;
             Notification.show('error', 'Failed to download server files');
+            ProgressBar.hide();
             busy = false;
         }
     }).finally(() => {
@@ -523,6 +522,7 @@ function install () {
             if (err) {
                 installbtn.disabled = false;
                 Notification.show('error', 'Failed to download client files');
+                ProgressBar.hide();
                 busy = false;
             }
         });
