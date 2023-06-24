@@ -25,9 +25,15 @@
                 </div>
             </div>
         </div>
+        <div id='opacity-window'></div>
+        <div ID="jsonprompt">
+            <div id="closejsonprompt">✗</div>
+            <div id="title">Select a file</div>
+            <div id="filelist"></div>
+        </div>
         <!-- Sidebar -->
         <div id="side-bar">
-            <p id="version">Version 2.0.5</p>
+            <p id="version"></p>
             <div id="menuitems">
                 <button id="play" disabled>Play</button>
                 <button id="server" disabled>Start Server</button>
@@ -40,20 +46,25 @@
         <!-- Page Content -->
         <div id='content'>
             <div id="playerdetails">
-                <p>Username</p>
-                <input id="username" placeholder="Chatty"/>
-                <br>
-                <p>Server</p>
-                <input id="serverip" placeholder="127.0.0.1:20260"/>
-                <p>Gender / Race</p>
-                <div class="custom-select">
-                    <select name="genderrace" id="genderrace">
-                        <option value="0">Select</option>
-                        <option value="2">Female Human</option>
-                        <option value="3">Male Human</option>
-                        <option value="5">Female Pixie</option>
-                        <option value="4">Male Pixie</option>
-                    </select>
+                <div id="username-container">
+                    <p>Username</p>
+                    <input id="username" placeholder="Chatty"/>
+                </div>
+                <div id="serverip-container">
+                    <p>Server</p>
+                    <input id="serverip" placeholder="127.0.0.1"/>
+                </div>
+                <div id="genderrace-container">
+                    <p>Gender / Race</p>
+                    <div class="custom-select">
+                        <select name="genderrace" id="genderrace">
+                            <option value="0">Select</option>
+                            <option value="2">Female Human</option>
+                            <option value="3">Male Human</option>
+                            <option value="5">Female Pixie</option>
+                            <option value="4">Male Pixie</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div id="console">

@@ -48,8 +48,9 @@ const createWindow = () => {
             contextIsolation: false,
             sandbox: false,
             spellcheck: false,
+            ELECTRON_DISABLE_SECURITY_WARNINGS: true,
         },
-        resizable: false,
+        resizable: true,
         backgroundColor: '#161b22',
     });
     win.loadFile('./src/www/index.html')
@@ -61,6 +62,7 @@ app.whenReady().then(() => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
         }
+        console.clear();
     });
 });
 

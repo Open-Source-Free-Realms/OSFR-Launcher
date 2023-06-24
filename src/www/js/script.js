@@ -8,12 +8,17 @@ const { exec } = require('child_process');
 const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
+const closejsonprompt = document.getElementById('closejsonprompt');
+const opacitywindow = document.getElementById('opacity-window');
 const os = require('os');
 const package = fs.readFileSync(path.join(__dirname, '..','..', 'package.json'), 'utf8');
 const data = JSON.parse(package);
 const version = data.version;
 // Busy flag to prevent unwanted actions while the application is busy
 var busy = false;
+
+const versionhtml = document.getElementById('version');
+versionhtml.innerHTML = `Version ${version}`;
 
 const Notification = {
     show(mode, message, verbose) {
@@ -101,14 +106,23 @@ const consoleContainer = document.getElementById('console');
     }
 })();
 
-// Check if client or server is installed
-if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
+// Check if server is installed
+if (fs.existsSync(path.join(__dirname, '..', '..', 'Server/OSFRServer.exe'))) {
     installbtn.disabled = true;
     serverbtn.disabled = false;
+    reinstallbtn.disabled = false;
+    uninstallbtn.disabled = false;
+}
+
+// Check if client is installed
+if (fs.existsSync(path.join(__dirname, '..', '..', 'Client/FreeRealms.exe'))) {
+    installbtn.disabled = true;
     playbtn.disabled = false;
     reinstallbtn.disabled = false;
     uninstallbtn.disabled = false;
-} else {
+}
+
+if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/OSFRServer.exe')) && (!fs.existsSync(path.join(__dirname, '..', '..', 'Client/FreeRealms.exe')))) {
     installbtn.disabled = false;
     reinstallbtn.disabled = true;
     uninstallbtn.disabled = true;
@@ -120,37 +134,6 @@ function disableAll() {
     uninstallbtn.disabled = true;
 }
 
-// Check if server is running
-function checkServer() {
-    return new Promise((resolve, reject) => {
-        exec('tasklist', (err, stdout, stderr) => {
-            if (err) {
-                reject(err);
-            }
-            if (stdout.includes('OSFRServer.exe')) {
-                resolve(true);
-            } else {
-                resolve(false);
-            }
-        });
-    });
-}
-
-// Check if client is running
-function checkClient() {
-    return new Promise((resolve, reject) => {
-        exec('tasklist', (err, stdout, stderr) => {
-            if (err) {
-                reject(err);
-            }
-            if (stdout.includes('FreeRealms.exe')) {
-                resolve(true);
-            } else {
-                resolve(false);
-            }
-        });
-    });
-}
 
 function getTaskList() {
     return new Promise((resolve, reject) => {
@@ -457,7 +440,7 @@ function install () {
     disableAll();
     // Download server files
     download({
-        url: 'https://files.lilliousnetworks.com/Server.zip',
+        url: 'https://files.lillious.com/Server.zip',
         fileName: 'Server.zip',
         temp: `${os.tmpdir()}/osfrserver`
     }).then(() => {
@@ -470,6 +453,7 @@ function install () {
         }).catch((err) => {
             if (err) {
                 Notification.show('error', 'Failed to extract server files');
+                reinstallbtn.disabled = false;
             }
         }).finally(() => {
             fs.rm(`${os.tmpdir()}/osfrserver`, { recursive: true, force: true }, (err) => {
@@ -483,7 +467,8 @@ function install () {
     }).catch((err) => {
         if (err) {
             Notification.show('error', err);
-            installbtn.disabled = false;
+            reinstallbtn.disabled = false;
+            uninstallbtn.disabled = false;
             Notification.show('error', 'Failed to download server files');
             ProgressBar.hide();
             busy = false;
@@ -492,7 +477,7 @@ function install () {
         // Download client files
         busy = true;
         download({
-            url: 'https://files.lilliousnetworks.com/Client.zip',
+            url: 'https://files.lillious.com/Client.zip',
             fileName: './Client.zip',
             temp: `${os.tmpdir()}/osfrclient`
         }).then(() => {
@@ -520,7 +505,8 @@ function install () {
             });
         }).catch((err) => {
             if (err) {
-                installbtn.disabled = false;
+                reinstallbtn.disabled = false;
+                uninstallbtn.disabled = false;
                 Notification.show('error', 'Failed to download client files');
                 ProgressBar.hide();
                 busy = false;
@@ -620,10 +606,10 @@ playbtn.addEventListener('click', () => {
     if (guid == 0) guid = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
     username = username.replace(/\s/g, '');
     username = username.charAt(0).toUpperCase() + username.slice(1);
-    var server = document.getElementById('serverip').value || '127.0.0.1:20260';
+    var server = document.getElementById('serverip').value || '127.0.0.1';
     if (!username) return Notification.show('error', 'Please enter a username');
     const args = `inifile=ClientConfig.ini Guid=${guid} Internationalization:Locale=8 ShowMemberLoadingScreen=0 Country=US key=m80HqsRO9i4PjJSCOasVMg== CasSessionId=Jk6TeiRMc4Ba38NO`
-    const process = exec(`FreeRealms.exe ${args} Server=${server} Ticket=${username}`, {
+    const process = exec(`FreeRealms.exe ${args} Server=${server}:20260 Ticket=${username}`, {
         cwd: path.join(__dirname, '..', '..', 'Client')
     }, (err, stdout, stderr) => {
         if (err) {
@@ -707,11 +693,35 @@ function closeAllSelect(elmnt) {
 document.addEventListener("click", closeAllSelect);
 
 settingsbtn.addEventListener('click', () => {
-    if (fs.existsSync(path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/Fallback.json'))) {
-        exec(`notepad ${path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/Fallback.json')}`, (err, stdout, stderr) => {
-            if (err) {
-                Notification.show('error', `Failed to open Fallback.json`);
-            }
+    // Clear all item class elements
+    const container = document.getElementById('filelist');
+    container.innerHTML = '';
+    jsonprompt.style.display = 'block';
+    opacitywindow.style.display = 'block';
+    if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/'))) return Notification.show('error', 'No files found');
+    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/'));
+    // Filter the files to only include json files
+    const jsonFiles = files.filter(file => file.endsWith('.json'));
+    if (!jsonFiles.length) return Notification.show('error', 'No files found');
+    // Create a list of the json files
+    jsonFiles.forEach(file => {
+        const item = document.createElement('div');
+        item.classList.add('item');
+        item.innerText = file;
+        item.addEventListener('click', () => {
+            exec(`notepad ${path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient', file)}`, (err, stdout, stderr) => {
+                if (err) {
+                    Notification.show('error', `Failed to open ${file}`);
+                }
+            });
+            jsonprompt.style.display = 'none';
+            opacitywindow.style.display = 'none';
         });
-    }
+        container.appendChild(item);
+    });
+});
+
+closejsonprompt.addEventListener('click', () => {
+    jsonprompt.style.display = 'none';
+    opacitywindow.style.display = 'none';
 });

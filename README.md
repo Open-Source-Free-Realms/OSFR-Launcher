@@ -5,3 +5,4 @@ https://github.com/Open-Source-Free-Realms/OpenSourceFreeRealms
 
 # Official Stable Releases
 https://github.com/Lillious/OSFR-Launcher/releases/
+
