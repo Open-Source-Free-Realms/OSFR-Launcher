@@ -2,7 +2,7 @@ const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
-const request = require('request');
+const fetch = require('node-fetch');
 const extract = require('extract-zip');
 const { exec } = require('child_process');
 const close = document.getElementById('close');
@@ -92,7 +92,7 @@ const settingsbtn = document.getElementById('settings');
 const progressBarContainer = document.getElementById('progress-container');
 const progressBar = document.getElementById('progress');
 const progressText = document.getElementById('progress-text');
-const consoleContainer = document.getElementById('console');
+
 (function () {
     var old = console.log;
     const consoleContent = document.getElementById('console-content');
@@ -107,7 +107,7 @@ const consoleContainer = document.getElementById('console');
 })();
 
 // Check if server is installed
-if (fs.existsSync(path.join(__dirname, '..', '..', 'Server/OSFRServer.exe'))) {
+if (fs.existsSync(path.join(__dirname, '..', '..', 'Server'))) {
     installbtn.disabled = true;
     serverbtn.disabled = false;
     reinstallbtn.disabled = false;
@@ -115,14 +115,14 @@ if (fs.existsSync(path.join(__dirname, '..', '..', 'Server/OSFRServer.exe'))) {
 }
 
 // Check if client is installed
-if (fs.existsSync(path.join(__dirname, '..', '..', 'Client/FreeRealms.exe'))) {
+if (fs.existsSync(path.join(__dirname, '..', '..', 'Client'))) {
     installbtn.disabled = true;
     playbtn.disabled = false;
     reinstallbtn.disabled = false;
     uninstallbtn.disabled = false;
 }
 
-if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/OSFRServer.exe')) && (!fs.existsSync(path.join(__dirname, '..', '..', 'Client/FreeRealms.exe')))) {
+if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server')) && (!fs.existsSync(path.join(__dirname, '..', '..', 'Client')))) {
     installbtn.disabled = false;
     reinstallbtn.disabled = true;
     uninstallbtn.disabled = true;
@@ -219,39 +219,64 @@ function showDownloadingProgress(received, total) {
     ProgressBar.update(((received * 100) / total).toFixed(1));
 }
 
-function download(options) {
-    if (!options) return;
-    Notification.show('information', 'Download started');
-    var received_bytes = 0;
-    var total_bytes = 0;
-    var outStream = fs.createWriteStream(`${options.temp}/${options.fileName}`);
-    try {
-        if (!fs.existsSync(options.temp)) {
-            fs.mkdirSync(options.temp, { recursive: true });
-        }
-    } catch (err) {
-        console.error(err);
-        reject(err);
-    }
+function download (options) {
+    var startTime, endTime;
     return new Promise((resolve, reject) => {
-        request
-            .get(options.url)
-            .on('error', function(err) {
+        if (!options) reject('No options provided');
+
+        try {
+            if (!fs.existsSync(options.temp)) {
+                fs.mkdirSync(options.temp, { recursive: true });
+            }
+        } catch {
+            reject('Failed to create temp directory');
+        }
+
+        const req = fetch(options.url, { method: 'GET', encoding: null});
+        req.then((res) => {
+            startTime = new Date().getTime();
+            if (res.status !== 200) {
+                reject(`Server responded with ${res.status}: ${res.statusText}`);
+            }
+
+            const total = res.headers.get('content-length');
+            let received = 0;
+            const dest = fs.createWriteStream(path.join(options.temp, options.fileName));
+
+            res.body.on('data', (chunk) => {
+                received += chunk.length;
+                showDownloadingProgress(received, total);
+            }).pipe(dest);
+            
+            res.body.on('error', (err) => {
+                fs.rm(path.join(options.temp), (err) => { });
                 reject(err);
-            })
-            .on('response', function(data) {
-                total_bytes = parseInt(data.headers['content-length']);
-                if (isNaN(total_bytes)) reject(err);
-            })
-            .on('data', function(chunk) {
-                if (isNaN(total_bytes)) reject(err);
-                received_bytes += chunk.length;
-                showDownloadingProgress(received_bytes, total_bytes);
-            })
-            .on('end', function() {
-                resolve();
-            })
-            .pipe(outStream);
+            });
+
+            dest.on('finish', () => {
+                endTime = new Date().getTime();
+                const timeDiff = endTime - startTime;
+                const seconds = Math.round(timeDiff / 1000);
+                const bytes = fs.statSync(path.join(options.temp, options.fileName)).size;
+                const bps = Math.round(bytes / seconds);
+                const kbps = Math.round(bps / 1024);
+                const mbps = Math.round(kbps / 1024);
+                // Check if mbps is infinity
+                if (mbps == Infinity) {
+                    Notification.show('information', `Download finished in ${seconds} seconds`);
+                    resolve();
+                } else {
+                    Notification.show('information', `Download finished in ${seconds} seconds (${mbps} MB/s)`);
+                    resolve();
+                }
+            });
+
+            dest.on('error', (err) => {
+                reject(err);
+            });
+        }).catch((err) => {
+            reject(err);
+        });
     });
 }
 
@@ -278,12 +303,10 @@ fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
                     fileName: "update.zip",
                     temp: "./temp-update",
                 }).then(() => {
-                    Notification.show("success", "Update download complete");
                     Notification.show("information", "Extracting update...");
                     busy = true;
                     File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
                     .then(() => {
-                        Notification.show("success", "Extraction complete");
                         const src = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'src');
                         const dest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'src');
                         const packageSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'package.json');
@@ -426,42 +449,57 @@ reinstallbtn.addEventListener('click', async () => {
 
 
 uninstallbtn.addEventListener('click', async () => {
-    uninstall();
+    uninstall().then(() => {
+        Notification.show('success', 'Uninstallation complete');
+    }).catch((err) => {
+        if (err) {
+            Notification.show('error', 'Failed to uninstall');
+        }
+    }).finally(() => {
+        installbtn.disabled = false;
+        playbtn.disabled = true;
+        serverbtn.disabled = true;
+    });
 });
 
 function install () {
     busy = true;
+    playbtn.disabled = true;
+    serverbtn.disabled = true;
     if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
-        Notification.show('error', 'An installation already exists');
-        installbtn.disabled = true;
-        busy = false;
-        return;
+        Notification.show('information', 'Removing old files...');
+        fs.rm(path.join(__dirname, '..', '..', 'Server'), { recursive: true, force: true }, (err) => {
+            if (err) {
+                Notification.show('error', 'Failed to remove old files');
+            }
+        });
+        fs.rm(path.join(__dirname, '..', '..', 'Client'), { recursive: true, force: true }, (err) => {
+            if (err) {
+                Notification.show('error', 'Failed to remove old files');
+            }
+        });
     }
     disableAll();
     // Download server files
+    Notification.show('information', 'Downloading Server files...');
     download({
         url: 'https://files.lillious.com/Server.zip',
         fileName: 'Server.zip',
         temp: `${os.tmpdir()}/osfrserver`
     }).then(() => {
-        Notification.show('success', 'Server download complete');
-        Notification.show('information', 'Extracting Server files');
         busy = true;
+        Notification.show('information', 'Installing server');
         File.extract(`${os.tmpdir()}/osfrserver/Server.zip`, path.join(__dirname, '..', '..'))
         .then(() => {
-            Notification.show('success', 'Extraction complete');
+            Notification.show('success', 'Server installation complete');
+            busy = false;
         }).catch((err) => {
             if (err) {
-                Notification.show('error', 'Failed to extract server files');
                 reinstallbtn.disabled = false;
             }
         }).finally(() => {
-            fs.rm(`${os.tmpdir()}/osfrserver`, { recursive: true, force: true }, (err) => {
-                if (err) {
-                    Notification.show('error', 'Failed to remove temporary files');
-                }
-                busy = false;
-            });
+            fs.rm(path.join(os.tmpdir(), 'osfrserver'), { recursive: true, force: true }, (err) => { });
+            busy = false;
             serverbtn.disabled = false;
         });
     }).catch((err) => {
@@ -476,29 +514,23 @@ function install () {
     }).finally(() => {
         // Download client files
         busy = true;
+        Notification.show('information', 'Downloading Client files...');
         download({
             url: 'https://files.lillious.com/Client.zip',
             fileName: './Client.zip',
             temp: `${os.tmpdir()}/osfrclient`
         }).then(() => {
-            Notification.show('success', 'Client download complete');
-            Notification.show('information', 'Extracting client files');
             busy = true;
+            Notification.show('information', 'Installing client');
             File.extract(`${os.tmpdir()}/osfrclient/Client.zip`, path.join(__dirname, '..', '..'))
             .then(() => {
-                Notification.show('success', 'Extraction complete');
+                Notification.show('success', 'Client installation complete');
                 busy = false;
             }).catch((err) => {
                 if (err) {
-                    Notification.show('error', 'Failed to extract client files');
                 }
             }).finally(() => {
-                fs.rm(`${os.tmpdir()}/osfrclient`, { recursive: true, force: true }, (err) => {
-                    if (err) {
-                        Notification.show('error', 'Failed to remove temporary files');
-                    }
-                    busy = false;
-                });
+                fs.rm(`${os.tmpdir()}/osfrclient`, { recursive: true, force: true }, (err) => {});
                 playbtn.disabled = false;
                 reinstallbtn.disabled = false;
                 uninstallbtn.disabled = false;
@@ -516,13 +548,7 @@ function install () {
 }
 
 function reinstall () {
-    uninstall().then(() => {
-        install();
-    }).catch((err) => {
-        if (err) {
-            // Do nothing if uninstall fails because it will be handled by the uninstall function
-        }
-    });
+    install();
 }
 
 function uninstall () {
@@ -530,22 +556,15 @@ function uninstall () {
         disableAll();
         fs.rm(path.join(__dirname, '..', '..', 'Server'), { recursive: true, force: true }, (err) => {
             if (err) {
-                Notification.show('error', 'Failed to uninstall');
                 reject(err);
             }
-            fs.rm(path.join(__dirname, '..', '..', 'Client'), { recursive: true, force: true }, (err) => {
-                if (err) {
-                    Notification.show('error', 'Failed to uninstall');
-                    reject(err);
-                }
-                Notification.show('success', 'Uninstall complete');
-                installbtn.disabled = false;
-                playbtn.disabled = true;
-                serverbtn.disabled = true;
-                resolve();
-            });
         });
-       
+        fs.rm(path.join(__dirname, '..', '..', 'Client'), { recursive: true, force: true }, (err) => {
+            if (err) {
+                reject(err);
+            }
+        });
+        resolve();
     });
 }
 
