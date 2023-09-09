@@ -489,7 +489,7 @@ function install () {
     }).then(() => {
         busy = true;
         Notification.show('information', 'Installing server');
-        File.extract(`${os.tmpdir()}/osfrserver/Server.zip`, path.join(__dirname, '..', '..'))
+        File.extract(`${os.tmpdir()}/osfrserver/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
         .then(() => {
             Notification.show('success', 'Server installation complete');
             busy = false;
@@ -522,7 +522,7 @@ function install () {
         }).then(() => {
             busy = true;
             Notification.show('information', 'Installing client');
-            File.extract(`${os.tmpdir()}/osfrclient/Client.zip`, path.join(__dirname, '..', '..'))
+            File.extract(`${os.tmpdir()}/osfrclient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
             .then(() => {
                 Notification.show('success', 'Client installation complete');
                 busy = false;

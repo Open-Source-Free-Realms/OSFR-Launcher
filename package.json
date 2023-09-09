@@ -1,11 +1,11 @@
 {
   "name": "launcher",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "A open-source launcher for the OSFR project",
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "clean": "rimraf release/ && rimraf logs/ && rimraf settings.json",
+    "clean": "rimraf release/ && rimraf logs/ && rimraf settings.json && rimraf temp-update/",
     "uglifyjs": "uglifyjs-folder release/launcher-win32-x64/resources/app -eo release/launcher-win32-x64/resources/app -m -r -x .js",
     "build": "npm run clean && electron-packager . --platform=win32 --arch=x64 --out=release --overwrite && npm run uglifyjs",
     "build-zip": "npm run build && npm run zip && rimraf release/launcher-win32-x64",
