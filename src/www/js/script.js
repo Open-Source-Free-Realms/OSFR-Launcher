@@ -360,7 +360,8 @@ fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
 
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
-    let exists = fs.existsSync(path.join(os.homedir(), '..', '..', 'Windows', 'System32', 'D3DX9_43.dll'));
+    let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
+    let exists = (fs.existsSync(path.join(System32, 'D3DX9_43.dll')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
     if (!exists) {
         directx()
         .then(() => {
