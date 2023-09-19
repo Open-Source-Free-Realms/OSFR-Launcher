@@ -313,6 +313,8 @@ fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
                         const packageDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'package.json');
                         const mainSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'index.js');
                         const mainDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'index.js');
+                        const modulesSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'node_modules');
+                        const modulesDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'node_modules');
                         try {
                             fse.copySync(src, dest, { overwrite: true });
                         } catch (err) {
@@ -325,6 +327,11 @@ fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
                         }
                         try {
                             fse.copySync(mainSrc, mainDest, { overwrite: true });
+                        } catch (err) {
+                            Notification.show("error", "Failed to copy update");
+                        }
+                        try {
+                            fse.copySync(modulesSrc, modulesDest, { overwrite: true });
                         } catch (err) {
                             Notification.show("error", "Failed to copy update");
                         }
