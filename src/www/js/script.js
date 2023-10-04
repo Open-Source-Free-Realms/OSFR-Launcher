@@ -491,7 +491,7 @@ function install () {
     // Download server files
     Notification.show('information', 'Downloading Server files...');
     download({
-        url: 'https://files.lillious.com/Server.zip',
+        url: 'https://lilliousnetworks.com/files/Server.zip',
         fileName: 'Server.zip',
         temp: `${os.tmpdir()}/osfrserver`
     }).then(() => {
@@ -524,7 +524,7 @@ function install () {
         busy = true;
         Notification.show('information', 'Downloading Client files...');
         download({
-            url: 'https://files.lillious.com/Client.zip',
+            url: 'https://lilliousnetworks.com/files/Client.zip',
             fileName: './Client.zip',
             temp: `${os.tmpdir()}/osfrclient`
         }).then(() => {
