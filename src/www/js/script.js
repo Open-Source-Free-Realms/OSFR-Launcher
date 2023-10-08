@@ -579,7 +579,7 @@ function uninstall () {
 serverbtn.addEventListener('click', () => {
     if (serverbtn.innerText == 'Start Server') {
         const process = exec('OSFRServer.exe', {
-            cwd: path.join(__dirname, '..', '..', 'Server')
+            cwd: path.join(__dirname, '..', '..', 'server/Server')
         }, (err, stdout, stderr) => {});
         process.stderr.on('data', (data) => {
             Notification.show('error', `An error occured, check logs for more information`);
@@ -637,7 +637,7 @@ playbtn.addEventListener('click', () => {
     if (!username) return Notification.show('error', 'Please enter a username');
     const args = `inifile=ClientConfig.ini Guid=${guid} Internationalization:Locale=8 ShowMemberLoadingScreen=0 Country=US key=m80HqsRO9i4PjJSCOasVMg== CasSessionId=Jk6TeiRMc4Ba38NO`
     const process = exec(`FreeRealms.exe ${args} Server=${server}:20260 Ticket=${username}`, {
-        cwd: path.join(__dirname, '..', '..', 'Client')
+        cwd: path.join(__dirname, '..', '..', 'Client/Client')
     }, (err, stdout, stderr) => {
         if (err) {
             Notification.show('error', err, true);
