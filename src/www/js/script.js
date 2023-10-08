@@ -293,7 +293,7 @@ const File = {
 }
 
 // Check for updates
-fetch("https://api.github.com/repos/Lillious/OSFR-Launcher/releases/latest")
+fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releases/latest")
     .then(res => res.json())
         .then(json => {
             if (json.tag_name !== version) {
@@ -491,13 +491,13 @@ function install () {
     // Download server files
     Notification.show('information', 'Downloading Server files...');
     download({
-        url: 'https://lilliousnetworks.com/files/Server.zip',
+        url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
-        temp: `${os.tmpdir()}/osfrserver`
+        temp: `${os.tmpdir()}/OSFRServer`
     }).then(() => {
         busy = true;
         Notification.show('information', 'Installing server');
-        File.extract(`${os.tmpdir()}/osfrserver/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
+        File.extract(`${os.tmpdir()}/OSFRServer/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
         .then(() => {
             Notification.show('success', 'Server installation complete');
             busy = false;
@@ -506,7 +506,7 @@ function install () {
                 reinstallbtn.disabled = false;
             }
         }).finally(() => {
-            fs.rm(path.join(os.tmpdir(), 'osfrserver'), { recursive: true, force: true }, (err) => { });
+            fs.rm(path.join(os.tmpdir(), 'OSFRServer'), { recursive: true, force: true }, (err) => { });
             busy = false;
             serverbtn.disabled = false;
         });
@@ -524,13 +524,13 @@ function install () {
         busy = true;
         Notification.show('information', 'Downloading Client files...');
         download({
-            url: 'https://lilliousnetworks.com/files/Client.zip',
-            fileName: './Client.zip',
-            temp: `${os.tmpdir()}/osfrclient`
+            url: 'https://osfr.editz.dev/Client.zip',
+            fileName: 'Client.zip',
+            temp: `${os.tmpdir()}/OSFRClient/OSFRClient`
         }).then(() => {
             busy = true;
             Notification.show('information', 'Installing client');
-            File.extract(`${os.tmpdir()}/osfrclient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
+            File.extract(`${os.tmpdir()}/OSFRClient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
             .then(() => {
                 Notification.show('success', 'Client installation complete');
                 busy = false;
@@ -538,7 +538,7 @@ function install () {
                 if (err) {
                 }
             }).finally(() => {
-                fs.rm(`${os.tmpdir()}/osfrclient`, { recursive: true, force: true }, (err) => {});
+                fs.rm(`${os.tmpdir()}/OSFRClient`, { recursive: true, force: true }, (err) => {});
                 playbtn.disabled = false;
                 reinstallbtn.disabled = false;
                 uninstallbtn.disabled = false;
@@ -579,7 +579,7 @@ function uninstall () {
 serverbtn.addEventListener('click', () => {
     if (serverbtn.innerText == 'Start Server') {
         const process = exec('OSFRServer.exe', {
-            cwd: path.join(__dirname, '..', '..', 'Server')
+            cwd: path.join(__dirname, '..', '..', 'server/Server')
         }, (err, stdout, stderr) => {});
         process.stderr.on('data', (data) => {
             Notification.show('error', `An error occured, check logs for more information`);
@@ -637,7 +637,7 @@ playbtn.addEventListener('click', () => {
     if (!username) return Notification.show('error', 'Please enter a username');
     const args = `inifile=ClientConfig.ini Guid=${guid} Internationalization:Locale=8 ShowMemberLoadingScreen=0 Country=US key=m80HqsRO9i4PjJSCOasVMg== CasSessionId=Jk6TeiRMc4Ba38NO`
     const process = exec(`FreeRealms.exe ${args} Server=${server}:20260 Ticket=${username}`, {
-        cwd: path.join(__dirname, '..', '..', 'Client')
+        cwd: path.join(__dirname, '..', '..', 'Client/Client')
     }, (err, stdout, stderr) => {
         if (err) {
             Notification.show('error', err, true);
