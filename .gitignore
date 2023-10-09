@@ -132,3 +132,5 @@ dist
 release
 
 /.vs
+/OSFRLauncher-win32-x64
+*.zip
