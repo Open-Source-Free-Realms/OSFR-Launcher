@@ -526,7 +526,7 @@ function install () {
         download({
             url: 'https://osfr.editz.dev/Client.zip',
             fileName: 'Client.zip',
-            temp: `${os.tmpdir()}/OSFRClient/OSFRClient`
+            temp: `${os.tmpdir()}/OSFRClient`
         }).then(() => {
             busy = true;
             Notification.show('information', 'Installing client');
