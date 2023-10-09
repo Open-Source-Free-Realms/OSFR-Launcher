@@ -20,3 +20,10 @@ https://github.com/Open-Source-Free-Realms/OpenSourceFreeRealms
 - Enter the **server ip** or **domain** in the **Server** input field - *This is only required if connecting externally and is not required for playing locally*
 - Click **Play** to jump into Free Realms!
 - Select the **Cog Wheel** at the bottom left to change your character's customization options.
+
+# Compiling Instructions
+
+- Download the latest version of NodeJS: https://nodejs.org/en/download/current
+- Open Command Promt and navigate to project folder
+- type **npm i electron** and hit enter
+- then type **npx electron-packager . OSFRLauncher --overwrite --icon=src\www\img\icon.ico**
