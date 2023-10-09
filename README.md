@@ -4,7 +4,7 @@ A launcher for the [Open-Source FreeRealms Project](https://github.com/Open-Sour
 
 # Install Instructions
 
-- Download **launcher-win32-x64.zip** from the [latest release](https://github.com/Lillious/OSFR-Launcher/releases/)
+- Download **launcher-win32-x64.zip** from the [latest release](https://github.com/Open-Source-Free-Realms/OSFR-Launcher/releases/)
 
 - Extract **launcher-win32-x64.zip**
 
