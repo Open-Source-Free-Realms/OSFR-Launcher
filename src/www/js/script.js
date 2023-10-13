@@ -725,8 +725,8 @@ settingsbtn.addEventListener('click', () => {
     container.innerHTML = '';
     jsonprompt.style.display = 'block';
     opacitywindow.style.display = 'block';
-    if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/'))) return Notification.show('error', 'No files found');
-    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/'));
+    if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/Server/Customize/PacketSendSelfToClient/'))) return Notification.show('error', 'No files found');
+    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'Server/Server/Customize/PacketSendSelfToClient/'));
     // Filter the files to only include json files
     const jsonFiles = files.filter(file => file.endsWith('.json'));
     if (!jsonFiles.length) return Notification.show('error', 'No files found');
@@ -736,7 +736,7 @@ settingsbtn.addEventListener('click', () => {
         item.classList.add('item');
         item.innerText = file;
         item.addEventListener('click', () => {
-            exec(`notepad ${path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient', file)}`, (err, stdout, stderr) => {
+            exec(`notepad ${path.join(__dirname, '..', '..', 'Server/Server/Customize/PacketSendSelfToClient', file)}`, (err, stdout, stderr) => {
                 if (err) {
                     Notification.show('error', `Failed to open ${file}`);
                 }
