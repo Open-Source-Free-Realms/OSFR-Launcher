@@ -263,10 +263,8 @@ function download (options) {
                 const mbps = Math.round(kbps / 1024);
                 // Check if mbps is infinity
                 if (mbps == Infinity) {
-                    Notification.show('information', `Download finished in ${seconds} seconds`);
                     resolve();
                 } else {
-                    Notification.show('information', `Download finished in ${seconds} seconds (${mbps} MB/s)`);
                     resolve();
                 }
             });
@@ -489,7 +487,7 @@ function install () {
     }
     disableAll();
     // Download server files
-    Notification.show('information', 'Downloading Server files...');
+    Notification.show('information', 'Downloading Server files');
     download({
         url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
@@ -498,9 +496,12 @@ function install () {
         busy = true;
         Notification.show('information', 'Installing server');
         File.extract(`${os.tmpdir()}/OSFRServer/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
-        .then(() => {
-            Notification.show('success', 'Server installation complete');
-            busy = false;
+            .then(() => {
+                Notification.show('information', 'Extracting Server');
+                busy = false;
+            }).then(() => {
+                Notification.show('success', 'Extracting Complete');
+                busy = false;
         }).catch((err) => {
             if (err) {
                 reinstallbtn.disabled = false;
@@ -522,7 +523,7 @@ function install () {
     }).finally(() => {
         // Download client files
         busy = true;
-        Notification.show('information', 'Downloading Client files...');
+        Notification.show('information', 'Downloading Client files');
         download({
             url: 'https://osfr.editz.dev/Client.zip',
             fileName: 'Client.zip',
@@ -531,9 +532,12 @@ function install () {
             busy = true;
             Notification.show('information', 'Installing client');
             File.extract(`${os.tmpdir()}/OSFRClient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
-            .then(() => {
-                Notification.show('success', 'Client installation complete');
-                busy = false;
+                .then(() => {
+                    Notification.show('information', 'Extracting Client');
+                    busy = false;
+                }).then(() => {
+                    Notification.show('success', 'Extracting Complete');
+                    busy = false;
             }).catch((err) => {
                 if (err) {
                 }

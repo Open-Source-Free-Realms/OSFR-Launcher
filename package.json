@@ -1,6 +1,6 @@
 {
   "name": "launcher",
-  "version": "2.1.1",
+  "version": "2.1.3",
   "description": "A open-source launcher for the OSFR project",
   "main": "index.js",
   "scripts": {
