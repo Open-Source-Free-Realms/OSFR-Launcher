@@ -1,4 +1,10 @@
-const { app, BrowserWindow, ipcMain, autoUpdater, dialog } = require('electron');
+const {
+    app,
+    BrowserWindow,
+    ipcMain,
+    autoUpdater,
+    dialog
+} = require('electron');
 const DiscordRPC = require('discord-rpc');
 const ws = require('windows-shortcuts');
 const os = require('os')
@@ -97,28 +103,32 @@ const clientId = '1104553583816474744';
 
 DiscordRPC.register(clientId);
 
-const rpc = new DiscordRPC.Client({ transport: 'ipc' });
+const rpc = new DiscordRPC.Client({
+    transport: 'ipc'
+});
 const startTimestamp = new Date();
 
 async function setActivity() {
-  if (!rpc || !win) {
-    return;
-  }
+    if (!rpc || !win) {
+        return;
+    }
 
-  rpc.setActivity({
-    details: `Hanging out in the launcher`,
-    startTimestamp,
-    largeImageKey: 'ofsr',
-    instance: false,
-  });
+    rpc.setActivity({
+        details: `Hanging out in the launcher`,
+        startTimestamp,
+        largeImageKey: 'ofsr',
+        instance: false,
+    });
 }
 
 rpc.on('ready', () => {
-  setActivity();
-
-  setInterval(() => {
     setActivity();
-  }, 15e3);
+
+    setInterval(() => {
+        setActivity();
+    }, 15e3);
 });
 
-rpc.login({ clientId }).catch(console.error);
+rpc.login({
+    clientId
+}).catch(console.error);
