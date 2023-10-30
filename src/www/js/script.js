@@ -311,17 +311,17 @@ const File = {
 // Check for updates
 fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releases/latest")
     .then(res => res.json())
-        .then(json => {
-            if (json.tag_name !== version) {
-                Notification.show("information", "Downloading update");
-                download({
-                    url: json.assets[0].browser_download_url,
-                    fileName: "update.zip",
-                    temp: "./temp-update",
-                }).then(() => {
-                    Notification.show("information", "Extracting update");
-                    busy = true;
-                    File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
+    .then(json => {
+        if (json.tag_name !== version) {
+            Notification.show("information", "Downloading update");
+            download({
+                url: json.assets[0].browser_download_url,
+                fileName: "update.zip",
+                temp: "./temp-update",
+            }).then(() => {
+                Notification.show("information", "Extracting update");
+                busy = true;
+                File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
                     .then(() => {
                         const src = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'src');
                         const dest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'src');
@@ -351,7 +351,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                         } catch (err) {
                             Notification.show("error", "Failed to copy update");
                         }
-                        
+
                         Notification.show("information", "Update complete! Restarting");
                         setTimeout(() => {
                             ipcRenderer.send('restart');
@@ -371,16 +371,16 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                         });
                         busy = false;
                     });
-                }).catch((err) => {
-                    Notification.show("error", "Update download failed");
-                    busy = false;
-                });
-            } else {
-                Notification.show("information", "No updates found.");
-            }
+            }).catch((err) => {
+                Notification.show("error", "Update download failed");
+                busy = false;
+            });
+        } else {
+            Notification.show("information", "No updates found.");
         }
-);
-
+    }
+    );
+    
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
@@ -516,33 +516,29 @@ function install() {
     }
     disableAll();
     // Download server files
-    busy = true;
     Notification.show('information', 'Downloading Server files');
     download({
         url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
         temp: `${os.tmpdir()}/OSFRServer`
     }).then(() => {
-        Notification.show('success', 'Done');
-    }).then(() => {
         busy = true;
-        Notification.show('information', 'Extracting Server files');
+        Notification.show('success', 'Done');
         File.extract(`${os.tmpdir()}/OSFRServer/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
-    }).then(() => {
-        Notification.show('success', 'Extracting Complete');
-        busy = false;
-    }).catch((err) => {
-        if (err) {
-            reinstallbtn.disabled = false;
-        }
-    }).finally(() => {
-        fs.rm(path.join(os.tmpdir(), 'OSFRServer'), {
-            recursive: true,
-            force: true
-        }, (err) => { });
-        busy = false;
-        serverbtn.disabled = false;
-
+            .then(() => {
+                Notification.show('information', 'Downloading Client Files');
+                serverbtn.disabled = true;
+            }).catch((err) => {
+                if (err) {
+                    reinstallbtn.disabled = false;
+                }
+            }).finally(() => {
+                fs.rm(path.join(os.tmpdir(), 'OSFRServer'), {
+                    recursive: true,
+                    force: true
+                }, (err) => { });
+                busy = false;
+            });
     }).catch((err) => {
         if (err) {
             Notification.show('error', err);
@@ -555,41 +551,39 @@ function install() {
     }).finally(() => {
         // Download client files
         busy = true;
-        serverbtn.disabled = true;
-        Notification.show('information', 'Downloading Client files');
         download({
             url: 'https://osfr.editz.dev/Client.zip',
             fileName: 'Client.zip',
             temp: `${os.tmpdir()}/OSFRClient`
         }).then(() => {
-            Notification.show('success', 'Done');
-        }).then(() => {
             busy = true;
             Notification.show('information', 'Extracting Client');
             File.extract(`${os.tmpdir()}/OSFRClient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
-        }).then(() => {
-            Notification.show('success', 'Extracting Complete');
-            busy = false;
-            serverbtn.disabled = false;
+                .then(() => {
+                    Notification.show('information', 'Extracting Complete');
+                }).then(() => {
+                    Notification.show('success', 'Ready To Play!');
+                    serverbtn.disabled = false;
+                }).catch((err) => {
+                    if (err) { }
+                }).finally(() => {
+                    fs.rm(`${os.tmpdir()}/OSFRClient`, {
+                        recursive: true,
+                        force: true
+                    }, (err) => { });
+                    playbtn.disabled = false;
+                    reinstallbtn.disabled = false;
+                    uninstallbtn.disabled = false;
+                });
         }).catch((err) => {
-            if (err) { }
-        }).finally(() => {
-            fs.rm(`${os.tmpdir()}/OSFRClient`, {
-                recursive: true,
-                force: true
-            }, (err) => { });
-            playbtn.disabled = false;
-            reinstallbtn.disabled = false;
-            uninstallbtn.disabled = false;
+            if (err) {
+                reinstallbtn.disabled = false;
+                uninstallbtn.disabled = false;
+                Notification.show('error', 'Failed to download client files');
+                ProgressBar.hide();
+                busy = false;
+            }
         });
-    }).catch((err) => {
-        if (err) {
-            reinstallbtn.disabled = false;
-            uninstallbtn.disabled = false;
-            Notification.show('error', 'Failed to download client files');
-            ProgressBar.hide();
-            busy = false;
-        }
     });
 }
 
