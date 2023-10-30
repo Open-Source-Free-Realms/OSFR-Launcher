@@ -395,7 +395,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
             Notification.show("information", "No updates found.");
         }
     });
-
+    
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
@@ -816,10 +816,10 @@ logbtn.addEventListener('click', () => {
     if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs/'))) return Notification.show('error', 'Unable to locate Log.txt');
     const files = fs.readdirSync(path.join(__dirname, '..', '..', 'logs/'));
     // Filter the files to only include txt files
-    const jsonFiles = files.filter(file => file.endsWith('.txt'));
-    if (!jsonFiles.length) return Notification.show('error', 'No files found');
+    const logFiles = files.filter(file => file.endsWith('.txt'));
+    if (!logFiles.length) return Notification.show('error', 'No files found');
     // Create a list of the txt files
-    jsonFiles.forEach(file => {
+    logFiles.forEach(file => {
         logbtn.addEventListener('click', () => {
             exec(`notepad ${path.join(__dirname, '..', '..', 'logs', file)}`, (err, stdout, stderr) => {
                 if (err) {
