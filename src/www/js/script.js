@@ -1,17 +1,21 @@
-const { ipcRenderer } = require('electron');
+const {
+    ipcRenderer
+} = require('electron');
 const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
 const fetch = require('node-fetch');
 const extract = require('extract-zip');
-const { exec } = require('child_process');
+const {
+    exec
+} = require('child_process');
 const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
 const closejsonprompt = document.getElementById('closejsonprompt');
 const opacitywindow = document.getElementById('opacity-window');
 const os = require('os');
-const package = fs.readFileSync(path.join(__dirname, '..','..', 'package.json'), 'utf8');
+const package = fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8');
 const data = JSON.parse(package);
 const version = data.version;
 // Busy flag to prevent unwanted actions while the application is busy
@@ -63,13 +67,16 @@ const Notification = {
     }
 }
 
-Notification.show("information", "Checking for updates...");
+Notification.show("information", "Checking for updates");
 
 // Prevent abnormal closing of the application
 window.addEventListener('keydown', (e) => {
-    const { key, altKey } = e;
+    const {
+        key,
+        altKey
+    } = e;
     if (key === 'F4' && altKey) {
-        e.preventDefault();   
+        e.preventDefault();
         Notification.show('warn', 'User attempted to close the application abnormally', true);
     }
 });
@@ -80,8 +87,12 @@ close.addEventListener('click', () => {
         ipcRenderer.send('close');
     });
 });
-minimize.addEventListener('click', () => { ipcRenderer.send('minimize'); });
-maximize.addEventListener('click', () => { ipcRenderer.send('maximize'); });
+minimize.addEventListener('click', () => {
+    ipcRenderer.send('minimize');
+});
+maximize.addEventListener('click', () => {
+    ipcRenderer.send('maximize');
+});
 const playbtn = document.getElementById('play');
 const serverbtn = document.getElementById('server');
 const installbtn = document.getElementById('install');
@@ -146,7 +157,7 @@ function getTaskList() {
     });
 }
 
-function CheckRunningTasks () {
+function CheckRunningTasks() {
     getTaskList().then((stdout) => {
         if (stdout.includes('OSFRServer.exe')) {
             serverbtn.innerText = 'Stop Server';
@@ -181,7 +192,9 @@ setInterval(() => {
 
 function log(mode, message) {
     if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs'))) {
-        fs.mkdirSync(path.join(__dirname, '..', '..', 'logs'), { recursive: true });
+        fs.mkdirSync(path.join(__dirname, '..', '..', 'logs'), {
+            recursive: true
+        });
     }
 
     fs.appendFileSync(path.join(__dirname, '..', '..', 'logs/log.txt'), `${new Date().toLocaleString()} [${mode.toUpperCase()}] ${message}\n`, (err) => {
@@ -219,20 +232,25 @@ function showDownloadingProgress(received, total) {
     ProgressBar.update(((received * 100) / total).toFixed(1));
 }
 
-function download (options) {
+function download(options) {
     var startTime, endTime;
     return new Promise((resolve, reject) => {
         if (!options) reject('No options provided');
 
         try {
             if (!fs.existsSync(options.temp)) {
-                fs.mkdirSync(options.temp, { recursive: true });
+                fs.mkdirSync(options.temp, {
+                    recursive: true
+                });
             }
         } catch {
             reject('Failed to create temp directory');
         }
 
-        const req = fetch(options.url, { method: 'GET', encoding: null});
+        const req = fetch(options.url, {
+            method: 'GET',
+            encoding: null
+        });
         req.then((res) => {
             startTime = new Date().getTime();
             if (res.status !== 200) {
@@ -247,7 +265,7 @@ function download (options) {
                 received += chunk.length;
                 showDownloadingProgress(received, total);
             }).pipe(dest);
-            
+
             res.body.on('error', (err) => {
                 fs.rm(path.join(options.temp), (err) => { });
                 reject(err);
@@ -293,17 +311,17 @@ const File = {
 // Check for updates
 fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releases/latest")
     .then(res => res.json())
-        .then(json => {
-            if (json.tag_name !== version) {
-                Notification.show("information", "Downloading update...");
-                download({
-                    url: json.assets[0].browser_download_url,
-                    fileName: "update.zip",
-                    temp: "./temp-update",
-                }).then(() => {
-                    Notification.show("information", "Extracting update...");
-                    busy = true;
-                    File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
+    .then(json => {
+        if (json.tag_name !== version) {
+            Notification.show("information", "Downloading update");
+            download({
+                url: json.assets[0].browser_download_url,
+                fileName: "update.zip",
+                temp: "./temp-update",
+            }).then(() => {
+                Notification.show("information", "Extracting update");
+                busy = true;
+                File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
                     .then(() => {
                         const src = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'src');
                         const dest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'src');
@@ -333,8 +351,8 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                         } catch (err) {
                             Notification.show("error", "Failed to copy update");
                         }
-                        
-                        Notification.show("information", "Update complete! Restarting...");
+
+                        Notification.show("information", "Update complete! Restarting");
                         setTimeout(() => {
                             ipcRenderer.send('restart');
                         }, 3000);
@@ -353,49 +371,54 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                         });
                         busy = false;
                     });
-                }).catch((err) => {
-                    Notification.show("error", "Update download failed");
-                    busy = false;
-                });
-            } else {
-                Notification.show("information", "No updates found.");
-            }
+            }).catch((err) => {
+                Notification.show("error", "Update download failed");
+                busy = false;
+            });
+        } else {
+            Notification.show("information", "No updates found.");
         }
-);
-
+    }
+    );
+    
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
     let exists = (fs.existsSync(path.join(System32, 'D3DX9_43.dll')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
     if (!exists) {
         directx()
-        .then(() => {
-            install();
-        }).catch((err) => {
-            if (err) {
-                busy = false;
-                Notification.show('error', 'Failed to install DirectX9');
-                installbtn.disabled = false;
-            }
-        }).finally(() => {
-            rm(path.join(os.tmpdir(), 'directx_Jun2010_redist.exe'), { recursive: true, force: true }, (err) => {
+            .then(() => {
+                install();
+            }).catch((err) => {
                 if (err) {
-                    Notification.show('error', 'Failed to remove temporary files');
+                    busy = false;
+                    Notification.show('error', 'Failed to install DirectX9');
+                    installbtn.disabled = false;
                 }
+            }).finally(() => {
+                rm(path.join(os.tmpdir(), 'directx_Jun2010_redist.exe'), {
+                    recursive: true,
+                    force: true
+                }, (err) => {
+                    if (err) {
+                        Notification.show('error', 'Failed to remove temporary files');
+                    }
+                });
+                rm(path.join(os.tmpdir(), 'directx9'), {
+                    recursive: true,
+                    force: true
+                }, (err) => {
+                    if (err) {
+                        Notification.show('error', 'Failed to remove temporary files');
+                    }
+                });
             });
-            rm(path.join(os.tmpdir(), 'directx9'), { recursive: true, force: true }, (err) => {
-                if (err) {
-                    Notification.show('error', 'Failed to remove temporary files');
-                }
-            });
-        });
     } else {
         install();
     }
 });
 
-function directx () 
-{
+function directx() {
     return new Promise((resolve, reject) => {
         download({
             url: 'https://download.microsoft.com/download/8/4/A/84A35BF1-DAFE-4AE8-82AF-AD2AE20B6B14/directx_Jun2010_redist.exe',
@@ -468,18 +491,24 @@ uninstallbtn.addEventListener('click', async () => {
     });
 });
 
-function install () {
+function install() {
     busy = true;
     playbtn.disabled = true;
     serverbtn.disabled = true;
     if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
-        Notification.show('information', 'Removing old files...');
-        fs.rm(path.join(__dirname, '..', '..', 'Server'), { recursive: true, force: true }, (err) => {
+        Notification.show('information', 'Removing old files');
+        fs.rm(path.join(__dirname, '..', '..', 'Server'), {
+            recursive: true,
+            force: true
+        }, (err) => {
             if (err) {
                 Notification.show('error', 'Failed to remove old files');
             }
         });
-        fs.rm(path.join(__dirname, '..', '..', 'Client'), { recursive: true, force: true }, (err) => {
+        fs.rm(path.join(__dirname, '..', '..', 'Client'), {
+            recursive: true,
+            force: true
+        }, (err) => {
             if (err) {
                 Notification.show('error', 'Failed to remove old files');
             }
@@ -494,23 +523,22 @@ function install () {
         temp: `${os.tmpdir()}/OSFRServer`
     }).then(() => {
         busy = true;
-        Notification.show('information', 'Installing server');
+        Notification.show('success', 'Done');
         File.extract(`${os.tmpdir()}/OSFRServer/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
             .then(() => {
-                Notification.show('information', 'Extracting Server');
+                Notification.show('information', 'Downloading Client Files');
+                serverbtn.disabled = true;
+            }).catch((err) => {
+                if (err) {
+                    reinstallbtn.disabled = false;
+                }
+            }).finally(() => {
+                fs.rm(path.join(os.tmpdir(), 'OSFRServer'), {
+                    recursive: true,
+                    force: true
+                }, (err) => { });
                 busy = false;
-            }).then(() => {
-                Notification.show('success', 'Extracting Complete');
-                busy = false;
-        }).catch((err) => {
-            if (err) {
-                reinstallbtn.disabled = false;
-            }
-        }).finally(() => {
-            fs.rm(path.join(os.tmpdir(), 'OSFRServer'), { recursive: true, force: true }, (err) => { });
-            busy = false;
-            serverbtn.disabled = false;
-        });
+            });
     }).catch((err) => {
         if (err) {
             Notification.show('error', err);
@@ -523,30 +551,30 @@ function install () {
     }).finally(() => {
         // Download client files
         busy = true;
-        Notification.show('information', 'Downloading Client files');
         download({
             url: 'https://osfr.editz.dev/Client.zip',
             fileName: 'Client.zip',
             temp: `${os.tmpdir()}/OSFRClient`
         }).then(() => {
             busy = true;
-            Notification.show('information', 'Installing client');
+            Notification.show('information', 'Extracting Client');
             File.extract(`${os.tmpdir()}/OSFRClient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
                 .then(() => {
-                    Notification.show('information', 'Extracting Client');
-                    busy = false;
+                    Notification.show('information', 'Extracting Complete');
                 }).then(() => {
-                    Notification.show('success', 'Extracting Complete');
-                    busy = false;
-            }).catch((err) => {
-                if (err) {
-                }
-            }).finally(() => {
-                fs.rm(`${os.tmpdir()}/OSFRClient`, { recursive: true, force: true }, (err) => {});
-                playbtn.disabled = false;
-                reinstallbtn.disabled = false;
-                uninstallbtn.disabled = false;
-            });
+                    Notification.show('success', 'Ready To Play!');
+                    serverbtn.disabled = false;
+                }).catch((err) => {
+                    if (err) { }
+                }).finally(() => {
+                    fs.rm(`${os.tmpdir()}/OSFRClient`, {
+                        recursive: true,
+                        force: true
+                    }, (err) => { });
+                    playbtn.disabled = false;
+                    reinstallbtn.disabled = false;
+                    uninstallbtn.disabled = false;
+                });
         }).catch((err) => {
             if (err) {
                 reinstallbtn.disabled = false;
@@ -559,19 +587,25 @@ function install () {
     });
 }
 
-function reinstall () {
+function reinstall() {
     install();
 }
 
-function uninstall () {
+function uninstall() {
     return new Promise((resolve, reject) => {
         disableAll();
-        fs.rm(path.join(__dirname, '..', '..', 'Server'), { recursive: true, force: true }, (err) => {
+        fs.rm(path.join(__dirname, '..', '..', 'Server'), {
+            recursive: true,
+            force: true
+        }, (err) => {
             if (err) {
                 reject(err);
             }
         });
-        fs.rm(path.join(__dirname, '..', '..', 'Client'), { recursive: true, force: true }, (err) => {
+        fs.rm(path.join(__dirname, '..', '..', 'Client'), {
+            recursive: true,
+            force: true
+        }, (err) => {
             if (err) {
                 reject(err);
             }
@@ -584,7 +618,7 @@ serverbtn.addEventListener('click', () => {
     if (serverbtn.innerText == 'Start Server') {
         const process = exec('OSFRServer.exe', {
             cwd: path.join(__dirname, '..', '..', 'server/Server')
-        }, (err, stdout, stderr) => {});
+        }, (err, stdout, stderr) => { });
         process.stderr.on('data', (data) => {
             Notification.show('error', `An error occured, check logs for more information`);
             Notification.show('error', data, true);
@@ -659,67 +693,67 @@ var x, i, j, l, ll, selElmnt, a, b, c;
 x = document.getElementsByClassName("custom-select");
 l = x.length;
 for (i = 0; i < l; i++) {
-  selElmnt = x[i].getElementsByTagName("select")[0];
-  ll = selElmnt.length;
-  a = document.createElement("DIV");
-  a.setAttribute("class", "select-selected");
-  a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
-  x[i].appendChild(a);
-  b = document.createElement("DIV");
-  b.setAttribute("class", "select-items select-hide");
-  for (j = 1; j < ll; j++) {
+    selElmnt = x[i].getElementsByTagName("select")[0];
+    ll = selElmnt.length;
+    a = document.createElement("DIV");
+    a.setAttribute("class", "select-selected");
+    a.innerHTML = selElmnt.options[selElmnt.selectedIndex].innerHTML;
+    x[i].appendChild(a);
+    b = document.createElement("DIV");
+    b.setAttribute("class", "select-items select-hide");
+    for (j = 1; j < ll; j++) {
 
-    c = document.createElement("DIV");
-    c.innerHTML = selElmnt.options[j].innerHTML;
-    c.addEventListener("click", function(e) {
-        var y, i, k, s, h, sl, yl;
-        s = this.parentNode.parentNode.getElementsByTagName("select")[0];
-        sl = s.length;
-        h = this.parentNode.previousSibling;
-        for (i = 0; i < sl; i++) {
-          if (s.options[i].innerHTML == this.innerHTML) {
-            s.selectedIndex = i;
-            h.innerHTML = this.innerHTML;
-            y = this.parentNode.getElementsByClassName("same-as-selected");
-            yl = y.length;
-            for (k = 0; k < yl; k++) {
-              y[k].removeAttribute("class");
+        c = document.createElement("DIV");
+        c.innerHTML = selElmnt.options[j].innerHTML;
+        c.addEventListener("click", function (e) {
+            var y, i, k, s, h, sl, yl;
+            s = this.parentNode.parentNode.getElementsByTagName("select")[0];
+            sl = s.length;
+            h = this.parentNode.previousSibling;
+            for (i = 0; i < sl; i++) {
+                if (s.options[i].innerHTML == this.innerHTML) {
+                    s.selectedIndex = i;
+                    h.innerHTML = this.innerHTML;
+                    y = this.parentNode.getElementsByClassName("same-as-selected");
+                    yl = y.length;
+                    for (k = 0; k < yl; k++) {
+                        y[k].removeAttribute("class");
+                    }
+                    this.setAttribute("class", "same-as-selected");
+                    break;
+                }
             }
-            this.setAttribute("class", "same-as-selected");
-            break;
-          }
-        }
-        h.click();
+            h.click();
+        });
+        b.appendChild(c);
+    }
+    x[i].appendChild(b);
+    a.addEventListener("click", function (e) {
+        e.stopPropagation();
+        closeAllSelect(this);
+        this.nextSibling.classList.toggle("select-hide");
+        this.classList.toggle("select-arrow-active");
     });
-    b.appendChild(c);
-  }
-  x[i].appendChild(b);
-  a.addEventListener("click", function(e) {
-    e.stopPropagation();
-    closeAllSelect(this);
-    this.nextSibling.classList.toggle("select-hide");
-    this.classList.toggle("select-arrow-active");
-  });
 }
 
 function closeAllSelect(elmnt) {
-  var x, y, i, xl, yl, arrNo = [];
-  x = document.getElementsByClassName("select-items");
-  y = document.getElementsByClassName("select-selected");
-  xl = x.length;
-  yl = y.length;
-  for (i = 0; i < yl; i++) {
-    if (elmnt == y[i]) {
-      arrNo.push(i)
-    } else {
-      y[i].classList.remove("select-arrow-active");
+    var x, y, i, xl, yl, arrNo = [];
+    x = document.getElementsByClassName("select-items");
+    y = document.getElementsByClassName("select-selected");
+    xl = x.length;
+    yl = y.length;
+    for (i = 0; i < yl; i++) {
+        if (elmnt == y[i]) {
+            arrNo.push(i)
+        } else {
+            y[i].classList.remove("select-arrow-active");
+        }
     }
-  }
-  for (i = 0; i < xl; i++) {
-    if (arrNo.indexOf(i)) {
-      x[i].classList.add("select-hide");
+    for (i = 0; i < xl; i++) {
+        if (arrNo.indexOf(i)) {
+            x[i].classList.add("select-hide");
+        }
     }
-  }
 }
 document.addEventListener("click", closeAllSelect);
 
