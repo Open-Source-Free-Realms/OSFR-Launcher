@@ -100,6 +100,7 @@ const reinstallbtn = document.getElementById('reinstall');
 const uninstallbtn = document.getElementById('uninstall');
 const clearConsole = document.getElementById('clearconsole');
 const settingsbtn = document.getElementById('settings');
+const logbtn = document.getElementById('logs');
 const progressBarContainer = document.getElementById('progress-container');
 const progressBar = document.getElementById('progress');
 const progressText = document.getElementById('progress-text');
@@ -332,22 +333,30 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                         const modulesSrc = path.join(__dirname, '..', '..', '..', '..', 'update', 'resources', 'app', 'node_modules');
                         const modulesDest = path.join(__dirname, '..', '..', '..', '..', 'resources', 'app', 'node_modules');
                         try {
-                            fse.copySync(src, dest, { overwrite: true });
+                            fse.copySync(src, dest, {
+                                overwrite: true
+                            });
                         } catch (err) {
                             Notification.show("error", "Failed to copy update");
                         }
                         try {
-                            fse.copySync(packageSrc, packageDest, { overwrite: true });
+                            fse.copySync(packageSrc, packageDest, {
+                                overwrite: true
+                            });
                         } catch (err) {
                             Notification.show("error", "Failed to copy update");
                         }
                         try {
-                            fse.copySync(mainSrc, mainDest, { overwrite: true });
+                            fse.copySync(mainSrc, mainDest, {
+                                overwrite: true
+                            });
                         } catch (err) {
                             Notification.show("error", "Failed to copy update");
                         }
                         try {
-                            fse.copySync(modulesSrc, modulesDest, { overwrite: true });
+                            fse.copySync(modulesSrc, modulesDest, {
+                                overwrite: true
+                            });
                         } catch (err) {
                             Notification.show("error", "Failed to copy update");
                         }
@@ -359,12 +368,18 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                     }).catch((err) => {
                         Notification.show("error", "Failed to extract update");
                     }).finally(() => {
-                        fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), { recursive: true, force: true }, (err) => {
+                        fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), {
+                            recursive: true,
+                            force: true
+                        }, (err) => {
                             if (err) {
                                 Notification.show("error", "Failed to remove temporary files");
                             }
                         });
-                        fs.rm(path.join(__dirname, '..', '..', '..', '..', 'temp-update'), { recursive: true, force: true }, (err) => {
+                        fs.rm(path.join(__dirname, '..', '..', '..', '..', 'temp-update'), {
+                            recursive: true,
+                            force: true
+                        }, (err) => {
                             if (err) {
                                 Notification.show("error", "Failed to remove temporary files");
                             }
@@ -374,13 +389,13 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
             }).catch((err) => {
                 Notification.show("error", "Update download failed");
                 busy = false;
+                logbtn.disabled = false;
             });
         } else {
             Notification.show("information", "No updates found.");
         }
-    }
-    );
-    
+    });
+
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
@@ -488,6 +503,7 @@ uninstallbtn.addEventListener('click', async () => {
         installbtn.disabled = false;
         playbtn.disabled = true;
         serverbtn.disabled = true;
+        logbtn.disabled = false;
     });
 });
 
@@ -544,6 +560,7 @@ function install() {
             Notification.show('error', err);
             reinstallbtn.disabled = false;
             uninstallbtn.disabled = false;
+            logbtn.disabled = false;
             Notification.show('error', 'Failed to download server files');
             ProgressBar.hide();
             busy = false;
@@ -579,6 +596,7 @@ function install() {
             if (err) {
                 reinstallbtn.disabled = false;
                 uninstallbtn.disabled = false;
+                logbtn.disabled = false;
                 Notification.show('error', 'Failed to download client files');
                 ProgressBar.hide();
                 busy = false;
@@ -622,6 +640,7 @@ serverbtn.addEventListener('click', () => {
         process.stderr.on('data', (data) => {
             Notification.show('error', `An error occured, check logs for more information`);
             Notification.show('error', data, true);
+            logbtn.disabled = false;
         });
         process.stdout.on('data', (data) => {
             console.log(data);
@@ -652,6 +671,7 @@ serverbtn.addEventListener('click', () => {
         exec('taskkill /IM OSFRServer.exe /F', (err, stdout, stderr) => {
             if (err) {
                 Notification.show('error', 'Failed to stop server');
+                logbtn.disabled = false;
             }
             Notification.show('success', 'Server stopped');
         });
@@ -679,6 +699,7 @@ playbtn.addEventListener('click', () => {
     }, (err, stdout, stderr) => {
         if (err) {
             Notification.show('error', err, true);
+            logbtn.disabled = false;
         }
     });
     process.stderr.on('data', (data) => {
@@ -790,3 +811,21 @@ closejsonprompt.addEventListener('click', () => {
     jsonprompt.style.display = 'none';
     opacitywindow.style.display = 'none';
 });
+
+logbtn.addEventListener('click', () => {
+    if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs/'))) return Notification.show('error', 'Unable to locate Log.txt');
+    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'logs/'));
+    // Filter the files to only include txt files
+    const jsonFiles = files.filter(file => file.endsWith('.txt'));
+    if (!jsonFiles.length) return Notification.show('error', 'No files found');
+    // Create a list of the txt files
+    jsonFiles.forEach(file => {
+        logbtn.addEventListener('click', () => {
+            exec(`notepad ${path.join(__dirname, '..', '..', 'logs', file)}`, (err, stdout, stderr) => {
+                if (err) {
+                    Notification.show('error', `Failed to open ${file}`);
+                }
+            });
+        })
+    })
+})
