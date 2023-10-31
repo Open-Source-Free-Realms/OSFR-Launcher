@@ -498,6 +498,7 @@ uninstallbtn.addEventListener('click', async () => {
     }).catch((err) => {
         if (err) {
             Notification.show('error', 'Failed to uninstall');
+            logbtn.disabled = false;
         }
     }).finally(() => {
         installbtn.disabled = false;
@@ -519,6 +520,7 @@ function install() {
         }, (err) => {
             if (err) {
                 Notification.show('error', 'Failed to remove old files');
+                logbtn.disabled = false;
             }
         });
         fs.rm(path.join(__dirname, '..', '..', 'Client'), {
@@ -527,26 +529,31 @@ function install() {
         }, (err) => {
             if (err) {
                 Notification.show('error', 'Failed to remove old files');
+                logbtn.disabled = false;
             }
         });
     }
     disableAll();
     // Download server files
-    Notification.show('information', 'Downloading Server files');
+    Notification.show('information', 'Downloading Server Files');
     download({
         url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
         temp: `${os.tmpdir()}/OSFRServer`
     }).then(() => {
         busy = true;
-        Notification.show('success', 'Done');
+        Notification.show('information', 'Extracting Server Files');
         File.extract(`${os.tmpdir()}/OSFRServer/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
             .then(() => {
-                Notification.show('information', 'Downloading Client Files');
+                Notification.show('success', 'Extraction Complete');
                 serverbtn.disabled = true;
+            }).then(() => { 
+                // Line 574
+                Notification.show('information', 'Downloading Client Files')
             }).catch((err) => {
                 if (err) {
                     reinstallbtn.disabled = false;
+                    logbtn.disabled = false;
                 }
             }).finally(() => {
                 fs.rm(path.join(os.tmpdir(), 'OSFRServer'), {
@@ -574,13 +581,14 @@ function install() {
             temp: `${os.tmpdir()}/OSFRClient`
         }).then(() => {
             busy = true;
-            Notification.show('information', 'Extracting Client');
+            Notification.show('information', 'Extracting Client Files');
             File.extract(`${os.tmpdir()}/OSFRClient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
                 .then(() => {
-                    Notification.show('information', 'Extracting Complete');
+                    Notification.show('success', 'Extraction Complete');
                 }).then(() => {
                     Notification.show('success', 'Ready To Play!');
                     serverbtn.disabled = false;
+                    busy = false;
                 }).catch((err) => {
                     if (err) { }
                 }).finally(() => {
