@@ -395,7 +395,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
             Notification.show("information", "No updates found.");
         }
     });
-
+    
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
@@ -498,12 +498,12 @@ uninstallbtn.addEventListener('click', async () => {
     }).catch((err) => {
         if (err) {
             Notification.show('error', 'Failed to uninstall');
+            logbtn.disabled = false;
         }
     }).finally(() => {
         installbtn.disabled = false;
         playbtn.disabled = true;
         serverbtn.disabled = true;
-        logbtn.disabled = false;
     });
 });
 
@@ -519,6 +519,7 @@ function install() {
         }, (err) => {
             if (err) {
                 Notification.show('error', 'Failed to remove old files');
+                logbtn.disabled = false;
             }
         });
         fs.rm(path.join(__dirname, '..', '..', 'Client'), {
@@ -527,26 +528,31 @@ function install() {
         }, (err) => {
             if (err) {
                 Notification.show('error', 'Failed to remove old files');
+                logbtn.disabled = false;
             }
         });
     }
     disableAll();
     // Download server files
-    Notification.show('information', 'Downloading Server files');
+    Notification.show('information', 'Downloading Server Files');
     download({
         url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
         temp: `${os.tmpdir()}/OSFRServer`
     }).then(() => {
         busy = true;
-        Notification.show('success', 'Done');
+        Notification.show('information', 'Extracting Server Files');
         File.extract(`${os.tmpdir()}/OSFRServer/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
             .then(() => {
-                Notification.show('information', 'Downloading Client Files');
+                Notification.show('success', 'Extraction Complete');
                 serverbtn.disabled = true;
+            }).then(() => { 
+                // Line 574
+                Notification.show('information', 'Downloading Client Files')
             }).catch((err) => {
                 if (err) {
                     reinstallbtn.disabled = false;
+                    logbtn.disabled = false;
                 }
             }).finally(() => {
                 fs.rm(path.join(os.tmpdir(), 'OSFRServer'), {
@@ -574,13 +580,14 @@ function install() {
             temp: `${os.tmpdir()}/OSFRClient`
         }).then(() => {
             busy = true;
-            Notification.show('information', 'Extracting Client');
+            Notification.show('information', 'Extracting Client Files');
             File.extract(`${os.tmpdir()}/OSFRClient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
                 .then(() => {
-                    Notification.show('information', 'Extracting Complete');
+                    Notification.show('success', 'Extraction Complete');
                 }).then(() => {
                     Notification.show('success', 'Ready To Play!');
                     serverbtn.disabled = false;
+                    busy = false;
                 }).catch((err) => {
                     if (err) { }
                 }).finally(() => {
@@ -816,10 +823,10 @@ logbtn.addEventListener('click', () => {
     if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs/'))) return Notification.show('error', 'Unable to locate Log.txt');
     const files = fs.readdirSync(path.join(__dirname, '..', '..', 'logs/'));
     // Filter the files to only include txt files
-    const jsonFiles = files.filter(file => file.endsWith('.txt'));
-    if (!jsonFiles.length) return Notification.show('error', 'No files found');
+    const logFiles = files.filter(file => file.endsWith('.txt'));
+    if (!logFiles.length) return Notification.show('error', 'No files found');
     // Create a list of the txt files
-    jsonFiles.forEach(file => {
+    logFiles.forEach(file => {
         logbtn.addEventListener('click', () => {
             exec(`notepad ${path.join(__dirname, '..', '..', 'logs', file)}`, (err, stdout, stderr) => {
                 if (err) {
