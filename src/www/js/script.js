@@ -504,7 +504,6 @@ uninstallbtn.addEventListener('click', async () => {
         installbtn.disabled = false;
         playbtn.disabled = true;
         serverbtn.disabled = true;
-        logbtn.disabled = false;
     });
 });
 
@@ -534,8 +533,8 @@ function install() {
         });
     }
     disableAll();
-    // Download server files
-    Notification.show('information', 'Downloading Server Files');
+    // Downloading server files
+    Notification.show('warn', 'Installing Necessary Files!');
     download({
         url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
@@ -547,9 +546,8 @@ function install() {
             .then(() => {
                 Notification.show('success', 'Extraction Complete');
                 serverbtn.disabled = true;
-            }).then(() => { 
-                // Line 574
-                Notification.show('information', 'Downloading Client Files')
+            }).then(() => {
+                Notification.show('success', 'Server Installation Complete')
             }).catch((err) => {
                 if (err) {
                     reinstallbtn.disabled = false;
@@ -572,9 +570,10 @@ function install() {
             ProgressBar.hide();
             busy = false;
         }
+
     }).finally(() => {
-        // Download client files
         busy = true;
+        // Downloading client files
         download({
             url: 'https://osfr.editz.dev/Client.zip',
             fileName: 'Client.zip',
@@ -586,7 +585,7 @@ function install() {
                 .then(() => {
                     Notification.show('success', 'Extraction Complete');
                 }).then(() => {
-                    Notification.show('success', 'Ready To Play!');
+                    Notification.show('success', 'Client Installation Complete');
                     serverbtn.disabled = false;
                     busy = false;
                 }).catch((err) => {
