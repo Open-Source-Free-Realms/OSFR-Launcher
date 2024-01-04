@@ -203,15 +203,6 @@ button:not(#minimize, #maximize, #close):disabled {
     rotate: 90deg;
 }
 
-#logs {
-    position: absolute;
-    bottom: 300px;
-    left: 0px;
-    font-size: 14px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
 #progress-container {
     position: absolute;
     display: none;
@@ -491,15 +482,6 @@ input:focus {
 /* jsonprompt scroll bar */
 #jsonprompt #filelist::-webkit-scrollbar {
     width: 4px;
-}
-
-#logs {
-    position: absolute;
-    bottom: 300px;
-    left: 0px;
-    font-size: 14px;
-    cursor: pointer;
-    font-weight: bold;
 }
 
 #opacity-window {

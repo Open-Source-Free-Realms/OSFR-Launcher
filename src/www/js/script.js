@@ -401,9 +401,13 @@ installbtn.addEventListener('click', async () => {
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
     let exists = (fs.existsSync(path.join(System32, 'D3DX9_43.dll')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
     if (!exists) {
-        directx()
-            .then(() => {
-                install();
+        install()
+    }
+    else
+        Notification.show("error", "Missing Directx9");
+    directx()
+       .then(() => { 
+           install();
             }).catch((err) => {
                 if (err) {
                     busy = false;
@@ -428,11 +432,7 @@ installbtn.addEventListener('click', async () => {
                     }
                 });
             });
-    } else {
-        install();
-    }
-});
-
+    })
 function directx() {
     return new Promise((resolve, reject) => {
         download({
@@ -598,6 +598,7 @@ function install() {
                     playbtn.disabled = false;
                     reinstallbtn.disabled = false;
                     uninstallbtn.disabled = false;
+                    logbtn.disabled = false;
                 });
         }).catch((err) => {
             if (err) {
