@@ -402,7 +402,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
-    let exists = (fs.existsSync(path.join(System32, 'd3dx9_31')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
+    let exists = (fs.existsSync(path.join(System32, 'd3dx9_31.dll')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
     if (!exists) {
         install()
     }
