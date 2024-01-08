@@ -67,7 +67,7 @@ const Notification = {
     }
 }
 
-Notification.show("information", "Checking for updates");
+
 
 // Prevent abnormal closing of the application
 window.addEventListener('keydown', (e) => {
@@ -309,7 +309,9 @@ const File = {
     }
 }
 
+
 // Check for updates
+Notification.show("information", "Checking For Updates");
 fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releases/latest")
     .then(res => res.json())
     .then(json => {
@@ -395,15 +397,20 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
             Notification.show("information", "No updates found.");
         }
     });
-    
+
+// Detects if directx9 is installed
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
-    let exists = (fs.existsSync(path.join(System32, 'D3DX9_43.dll')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
+    let exists = (fs.existsSync(path.join(System32, 'd3dx9_31')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
     if (!exists) {
-        directx()
-            .then(() => {
-                install();
+        install()
+    }
+    else
+        Notification.show("error", "Missing Directx9");
+    directx()
+       .then(() => { 
+           install();
             }).catch((err) => {
                 if (err) {
                     busy = false;
@@ -428,11 +435,7 @@ installbtn.addEventListener('click', async () => {
                     }
                 });
             });
-    } else {
-        install();
-    }
-});
-
+    })
 function directx() {
     return new Promise((resolve, reject) => {
         download({
@@ -533,8 +536,8 @@ function install() {
         });
     }
     disableAll();
-    // Download server files
-    Notification.show('information', 'Downloading Server Files');
+    // Downloading server files
+    Notification.show('warn', 'Installing Necessary Files');
     download({
         url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
@@ -546,9 +549,8 @@ function install() {
             .then(() => {
                 Notification.show('success', 'Extraction Complete');
                 serverbtn.disabled = true;
-            }).then(() => { 
-                // Line 574
-                Notification.show('information', 'Downloading Client Files')
+            }).then(() => {
+                Notification.show('success', 'Server Installation Complete')
             }).catch((err) => {
                 if (err) {
                     reinstallbtn.disabled = false;
@@ -571,9 +573,10 @@ function install() {
             ProgressBar.hide();
             busy = false;
         }
+
     }).finally(() => {
-        // Download client files
         busy = true;
+        // Downloading client files
         download({
             url: 'https://osfr.editz.dev/Client.zip',
             fileName: 'Client.zip',
@@ -585,7 +588,7 @@ function install() {
                 .then(() => {
                     Notification.show('success', 'Extraction Complete');
                 }).then(() => {
-                    Notification.show('success', 'Ready To Play!');
+                    Notification.show('success', 'Client Installation Complete');
                     serverbtn.disabled = false;
                     busy = false;
                 }).catch((err) => {
@@ -598,6 +601,7 @@ function install() {
                     playbtn.disabled = false;
                     reinstallbtn.disabled = false;
                     uninstallbtn.disabled = false;
+                    logbtn.disabled = false;
                 });
         }).catch((err) => {
             if (err) {
