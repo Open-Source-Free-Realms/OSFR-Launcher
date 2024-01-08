@@ -202,6 +202,7 @@ button:not(#minimize, #maximize, #close):disabled {
     transition: ease-in-out 0.3s;
     rotate: 90deg;
 }
+
 #progress-container {
     position: absolute;
     display: none;

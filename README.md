@@ -1,18 +1,18 @@
 # OSFR Launcher
 A launcher for the [Open-Source FreeRealms Project](https://github.com/Open-Source-Free-Realms/OpenSourceFreeRealms)
-![Alt text](https://github.com/Lillious/OSFR-Launcher/blob/main/teaser.png?raw=true)
+![Alt text](https://github.com/Open-Source-Free-Realms/OSFR-Launcher/blob/main/teaser.png?raw=true)
 
 # Install Instructions
 
-- Download **launcher-win32-x64.zip** from the [latest release](https://github.com/Open-Source-Free-Realms/OSFR-Launcher/releases/)
+- Download **OSFRLauncher-win32-x64.zip** from the [latest release](https://github.com/Open-Source-Free-Realms/OSFR-Launcher/releases/)
 
-- Extract **launcher-win32-x64.zip**
+- Extract **OSFRLauncher-win32-x64.zip**
 
-- Open the extracted **launcher-win32-x64** folder and run **launcher.exe**
+- Open the extracted **OSFRLauncher-win32-x64.zip** folder and run **OSFR Launcher.exe**
 
 # Usage Instructions
 
-- Once **launcher.exe** is opened (see "Install Instructions"), Click **Install** - *This step can take a while depending on your setup*
+- Once **OSFR Launcher.exe** is opened (see "Install Instructions"), Click **Install** - *This step can take a while depending on your setup*
 - Click **Start Server** to start a local server - *This is also required to play locally*
 - Enter your **nickname** in the **Username** input field
 - Enter the **server ip** or **domain** in the **Server** input field - *This is only required if connecting externally and is not required for playing locally*
