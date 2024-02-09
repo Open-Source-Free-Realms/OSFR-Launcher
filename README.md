@@ -1,7 +1,7 @@
 # OSFR Launcher
 A launcher for the [Open-Source FreeRealms Project](https://github.com/Open-Source-Free-Realms/OpenSourceFreeRealms)
 
-![Alt text](https://github.com/Stimpy7314/OSFR-Launcher/2.1.3/teaser.png?raw=true)
+![alt text](https://github.com/Stimpy7314/OSFR-Launcher/blob/2.1.3/teaser.png?raw=true)
 
 # Install Instructions
 
