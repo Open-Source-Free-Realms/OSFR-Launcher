@@ -14,7 +14,6 @@ const os = require('os');
 const package = fs.readFileSync(path.join(__dirname, '..','..', 'package.json'), 'utf8');
 const data = JSON.parse(package);
 const version = data.version;
-// Busy flag to prevent unwanted actions while the application is busy
 var busy = false;
 
 const versionhtml = document.getElementById('version');
@@ -63,25 +62,24 @@ const Notification = {
     }
 }
 
-Notification.show("information", "Checking for updates...");
-
 // Prevent abnormal closing of the application
-window.addEventListener('keydown', (e) => {
+window.addEventListener('keydown', async (e) => {
     const { key, altKey } = e;
     if (key === 'F4' && altKey) {
         e.preventDefault();   
         Notification.show('warn', 'User attempted to close the application abnormally', true);
     }
 });
-close.addEventListener('click', () => {
+close.addEventListener('click', async () => {
     if (busy) return Notification.show('error', 'Application is busy, please wait');
-    exec('taskkill /IM OSFRServer.exe /F', (err, stdout, stderr) => {
+    exec('taskkill /IM OSFRServer.exe /F', () => {
         Notification.show('information', 'Application has been closed peacefully', true);
         ipcRenderer.send('close');
     });
 });
-minimize.addEventListener('click', () => { ipcRenderer.send('minimize'); });
-maximize.addEventListener('click', () => { ipcRenderer.send('maximize'); });
+
+minimize.addEventListener('click', async () => { ipcRenderer.send('minimize'); });
+maximize.addEventListener('click', async () => { ipcRenderer.send('maximize'); });
 const playbtn = document.getElementById('play');
 const serverbtn = document.getElementById('server');
 const installbtn = document.getElementById('install');
@@ -92,7 +90,7 @@ const settingsbtn = document.getElementById('settings');
 const progressBarContainer = document.getElementById('progress-container');
 const progressBar = document.getElementById('progress');
 const progressText = document.getElementById('progress-text');
-
+const logbtn = document.getElementById('logs');
 (function () {
     var old = console.log;
     const consoleContent = document.getElementById('console-content');
@@ -127,14 +125,11 @@ if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server')) && (!fs.existsSyn
     reinstallbtn.disabled = true;
     uninstallbtn.disabled = true;
 }
-
 function disableAll() {
     installbtn.disabled = true;
     reinstallbtn.disabled = true;
     uninstallbtn.disabled = true;
 }
-
-
 function getTaskList() {
     return new Promise((resolve, reject) => {
         exec('tasklist', (err, stdout) => {
@@ -145,7 +140,6 @@ function getTaskList() {
         });
     });
 }
-
 function CheckRunningTasks () {
     getTaskList().then((stdout) => {
         if (stdout.includes('OSFRServer.exe')) {
@@ -177,8 +171,7 @@ function CheckRunningTasks () {
 
 setInterval(() => {
     CheckRunningTasks();
-}, 5000);
-
+}, 10000);
 function log(mode, message) {
     if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs'))) {
         fs.mkdirSync(path.join(__dirname, '..', '..', 'logs'), { recursive: true });
@@ -214,25 +207,28 @@ const ProgressBar = {
         }
     }
 }
-
 function showDownloadingProgress(received, total) {
     ProgressBar.update(((received * 100) / total).toFixed(1));
 }
-
-function download (options) {
+function download(options) {
     var startTime, endTime;
     return new Promise((resolve, reject) => {
         if (!options) reject('No options provided');
 
         try {
             if (!fs.existsSync(options.temp)) {
-                fs.mkdirSync(options.temp, { recursive: true });
+                fs.mkdirSync(options.temp, {
+                    recursive: true
+                });
             }
         } catch {
             reject('Failed to create temp directory');
         }
 
-        const req = fetch(options.url, { method: 'GET', encoding: null});
+        const req = fetch(options.url, {
+            method: 'GET',
+            encoding: null
+        });
         req.then((res) => {
             startTime = new Date().getTime();
             if (res.status !== 200) {
@@ -247,9 +243,9 @@ function download (options) {
                 received += chunk.length;
                 showDownloadingProgress(received, total);
             }).pipe(dest);
-            
+
             res.body.on('error', (err) => {
-                fs.rm(path.join(options.temp), (err) => { });
+                fs.rm(path.join(options.temp), () => { });
                 reject(err);
             });
 
@@ -261,16 +257,13 @@ function download (options) {
                 const bps = Math.round(bytes / seconds);
                 const kbps = Math.round(bps / 1024);
                 const mbps = Math.round(kbps / 1024);
-                // Check if mbps is infinity
                 if (mbps == Infinity) {
-                    Notification.show('information', `Download finished in ${seconds} seconds`);
-                    resolve();
-                } else {
-                    Notification.show('information', `Download finished in ${seconds} seconds (${mbps} MB/s)`);
                     resolve();
                 }
-            });
-
+                else {
+                    resolve();
+                }
+            })
             dest.on('error', (err) => {
                 reject(err);
             });
@@ -292,18 +285,20 @@ const File = {
     }
 }
 
-// Check for updates
-fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releases/latest")
+// Checking for updates
+Notification.show('information', 'Checking For Updates')
+fetch("https://api.github.com/repos/Stimpy7314/OSFR-Launcher/releases/latest")
     .then(res => res.json())
         .then(json => {
             if (json.tag_name !== version) {
-                Notification.show("information", "Downloading update...");
+                Notification.show("warn", "Downloading Update");
+                installbtn.disabled = true;
                 download({
                     url: json.assets[0].browser_download_url,
                     fileName: "update.zip",
                     temp: "./temp-update",
                 }).then(() => {
-                    Notification.show("information", "Extracting update...");
+                    Notification.show("information", "Extracting Update");
                     busy = true;
                     File.extract("./temp-update/update.zip", path.join(__dirname, '..', '..', '..', '..', 'update'))
                     .then(() => {
@@ -336,11 +331,13 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                             Notification.show("error", "Failed to copy update");
                         }
                         
-                        Notification.show("information", "Update complete! Restarting...");
+                        Notification.show("success", "Update complete! Restarting");
                         setTimeout(() => {
                             ipcRenderer.send('restart');
+                            installbtn.disabled = false;
                         }, 3000);
-                    }).catch((err) => {
+
+                    }).catch(() => {
                         Notification.show("error", "Failed to extract update");
                     }).finally(() => {
                         fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), { recursive: true, force: true }, (err) => {
@@ -355,12 +352,14 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                         });
                         busy = false;
                     });
-                }).catch((err) => {
+                }).catch(() => {
                     Notification.show("error", "Update download failed");
                     busy = false;
                 });
             } else {
-                Notification.show("information", "No updates found.");
+                setTimeout(() => {
+                    Notification.show("information", "No Updates Found");
+                }, 750);
             }
         }
 );
@@ -368,7 +367,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
 installbtn.addEventListener('click', async () => {
     installbtn.disabled = true;
     let System32 = path.join(os.homedir(), '..', '..', 'Windows', 'System32');
-    let exists = (fs.existsSync(path.join(System32, 'D3DX9_43.dll')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
+    let exists = (fs.existsSync(path.join(System32, 'd3dx9_31.dll')) && fs.existsSync(path.join(System32, 'd3d9.dll')));
     if (!exists) {
         directx()
         .then(() => {
@@ -395,7 +394,6 @@ installbtn.addEventListener('click', async () => {
         install();
     }
 });
-
 function directx () 
 {
     return new Promise((resolve, reject) => {
@@ -455,7 +453,6 @@ reinstallbtn.addEventListener('click', async () => {
     reinstall();
 });
 
-
 uninstallbtn.addEventListener('click', async () => {
     uninstall().then(() => {
         Notification.show('success', 'Uninstallation complete');
@@ -469,13 +466,12 @@ uninstallbtn.addEventListener('click', async () => {
         serverbtn.disabled = true;
     });
 });
-
-function install () {
+function install() {
     busy = true;
     playbtn.disabled = true;
     serverbtn.disabled = true;
     if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
-        Notification.show('information', 'Removing old files...');
+        Notification.show('warn', 'Removing old files');
         fs.rm(path.join(__dirname, '..', '..', 'Server'), { recursive: true, force: true }, (err) => {
             if (err) {
                 Notification.show('error', 'Failed to remove old files');
@@ -488,63 +484,69 @@ function install () {
         });
     }
     disableAll();
-    // Download server files
-    Notification.show('information', 'Downloading Server files...');
+    // Downloading server files
+    Notification.show('warn', 'Installing Necessary Files');
     download({
         url: 'https://osfr.editz.dev/Server.zip',
         fileName: 'Server.zip',
         temp: `${os.tmpdir()}/OSFRServer`
     }).then(() => {
         busy = true;
-        Notification.show('information', 'Installing server');
+        Notification.show('information', 'Extracting Server Files');
         File.extract(`${os.tmpdir()}/OSFRServer/Server.zip`, path.join(__dirname, '..', '..', 'Server'))
         .then(() => {
-            Notification.show('success', 'Server installation complete');
-            busy = false;
+        Notification.show('success', 'Extraction Complete');
+        serverbtn.disabled = true;
+        }).then(() => {
+        Notification.show('success', 'Server Installation Complete');
+        busy = false;
         }).catch((err) => {
             if (err) {
                 reinstallbtn.disabled = false;
             }
         }).finally(() => {
-            fs.rm(path.join(os.tmpdir(), 'OSFRServer'), { recursive: true, force: true }, (err) => { });
+            fs.rm(path.join(os.tmpdir(), 'OSFRServer'), { recursive: true, force: true }, () => { });
             busy = false;
-            serverbtn.disabled = false;
         });
     }).catch((err) => {
         if (err) {
-            Notification.show('error', err);
             reinstallbtn.disabled = false;
             uninstallbtn.disabled = false;
+            logbtn.disabled = false;
             Notification.show('error', 'Failed to download server files');
             ProgressBar.hide();
             busy = false;
         }
+
     }).finally(() => {
-        // Download client files
+        // Downloading client files
         busy = true;
-        Notification.show('information', 'Downloading Client files...');
         download({
             url: 'https://osfr.editz.dev/Client.zip',
             fileName: 'Client.zip',
             temp: `${os.tmpdir()}/OSFRClient`
         }).then(() => {
             busy = true;
-            Notification.show('information', 'Installing client');
+            Notification.show('information', 'Extracting Client Files');
             File.extract(`${os.tmpdir()}/OSFRClient/Client.zip`, path.join(__dirname, '..', '..', 'Client'))
-            .then(() => {
-                Notification.show('success', 'Client installation complete');
-                busy = false;
+              .then(() => {
+               Notification.show('success', 'Extraction Complete');
+              }).then(() => {
+               Notification.show('success', 'Client Installation Complete');
+               busy = false;
             }).catch((err) => {
                 if (err) {
                 }
             }).finally(() => {
-                fs.rm(`${os.tmpdir()}/OSFRClient`, { recursive: true, force: true }, (err) => {});
+                fs.rm(`${os.tmpdir()}/OSFRClient`, { recursive: true, force: true }, () => {});
                 playbtn.disabled = false;
+                serverbtn.disabled = false;
                 reinstallbtn.disabled = false;
                 uninstallbtn.disabled = false;
             });
         }).catch((err) => {
             if (err) {
+                logbtn.disabled = false;
                 reinstallbtn.disabled = false;
                 uninstallbtn.disabled = false;
                 Notification.show('error', 'Failed to download client files');
@@ -554,11 +556,9 @@ function install () {
         });
     });
 }
-
 function reinstall () {
     install();
 }
-
 function uninstall () {
     return new Promise((resolve, reject) => {
         disableAll();
@@ -576,11 +576,11 @@ function uninstall () {
     });
 }
 
-serverbtn.addEventListener('click', () => {
+serverbtn.addEventListener('click', async () => {
     if (serverbtn.innerText == 'Start Server') {
         const process = exec('OSFRServer.exe', {
             cwd: path.join(__dirname, '..', '..', 'server/Server')
-        }, (err, stdout, stderr) => {});
+        }, () => {});
         process.stderr.on('data', (data) => {
             Notification.show('error', `An error occured, check logs for more information`);
             Notification.show('error', data, true);
@@ -611,7 +611,7 @@ serverbtn.addEventListener('click', () => {
             Notification.show('error', err, true);
         });
     } else if (serverbtn.innerText == 'Stop Server') {
-        exec('taskkill /IM OSFRServer.exe /F', (err, stdout, stderr) => {
+        exec('taskkill /IM OSFRServer.exe /F', (err) => {
             if (err) {
                 Notification.show('error', 'Failed to stop server');
             }
@@ -620,13 +620,13 @@ serverbtn.addEventListener('click', () => {
     }
 });
 
-clearConsole.addEventListener('click', () => {
+clearConsole.addEventListener('click', async () => {
     const consoleContent = document.getElementById('console-content');
     consoleContent.innerHTML = '';
     Notification.show('information', 'Console cleared');
 });
 
-playbtn.addEventListener('click', () => {
+playbtn.addEventListener('click', async () => {
     if (playbtn.innerText != 'Play') return Notification.show('error', 'FreeRealms is already running');
     var username = document.getElementById('username').value;
     var guid = document.getElementById('genderrace').value || 0;
@@ -638,7 +638,7 @@ playbtn.addEventListener('click', () => {
     const args = `inifile=ClientConfig.ini Guid=${guid} Internationalization:Locale=8 ShowMemberLoadingScreen=0 Country=US key=m80HqsRO9i4PjJSCOasVMg== CasSessionId=Jk6TeiRMc4Ba38NO`
     const process = exec(`FreeRealms.exe ${args} Server=${server}:20260 Ticket=${username}`, {
         cwd: path.join(__dirname, '..', '..', 'Client/Client')
-    }, (err, stdout, stderr) => {
+    }, (err) => {
         if (err) {
             Notification.show('error', err, true);
         }
@@ -667,7 +667,7 @@ for (i = 0; i < l; i++) {
 
     c = document.createElement("DIV");
     c.innerHTML = selElmnt.options[j].innerHTML;
-    c.addEventListener("click", function(e) {
+    c.addEventListener("click", function() {
         var y, i, k, s, h, sl, yl;
         s = this.parentNode.parentNode.getElementsByTagName("select")[0];
         sl = s.length;
@@ -719,24 +719,21 @@ function closeAllSelect(elmnt) {
 }
 document.addEventListener("click", closeAllSelect);
 
-settingsbtn.addEventListener('click', () => {
-    // Clear all item class elements
+settingsbtn.addEventListener('click', async () => {
     const container = document.getElementById('filelist');
     container.innerHTML = '';
     jsonprompt.style.display = 'block';
     opacitywindow.style.display = 'block';
-    if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/'))) return Notification.show('error', 'No files found');
-    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient/'));
-    // Filter the files to only include json files
+    if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/Server/Customize/PacketSendSelfToClient/'))) return Notification.show('error', 'No files found');
+    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'Server/Server/Customize/PacketSendSelfToClient/'));
     const jsonFiles = files.filter(file => file.endsWith('.json'));
     if (!jsonFiles.length) return Notification.show('error', 'No files found');
-    // Create a list of the json files
     jsonFiles.forEach(file => {
         const item = document.createElement('div');
         item.classList.add('item');
         item.innerText = file;
-        item.addEventListener('click', () => {
-            exec(`notepad ${path.join(__dirname, '..', '..', 'Server/Customize/PacketSendSelfToClient', file)}`, (err, stdout, stderr) => {
+        item.addEventListener('click', async () => {
+            exec(`notepad ${path.join(__dirname, '..', '..', 'Server/Server/Customize/PacketSendSelfToClient', file)}`, (err) => {
                 if (err) {
                     Notification.show('error', `Failed to open ${file}`);
                 }
@@ -748,7 +745,23 @@ settingsbtn.addEventListener('click', () => {
     });
 });
 
-closejsonprompt.addEventListener('click', () => {
+closejsonprompt.addEventListener('click', async () => {
     jsonprompt.style.display = 'none';
     opacitywindow.style.display = 'none';
 });
+
+logbtn.addEventListener('click', async () => {
+    if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs/'))) return Notification.show('error', 'Unable to locate Log.txt');
+    const files = fs.readdirSync(path.join(__dirname, '..', '..', 'logs/'));
+    const logFiles = files.filter(file => file.endsWith('.txt'));
+    if (!logFiles.length) return Notification.show('error', 'No files found');
+    logFiles.forEach(file => {
+        logbtn.addEventListener('click', async () => {
+            exec(`notepad ${path.join(__dirname, '..', '..', 'logs', file)}`, (err) => {
+                if (err) {
+                    Notification.show('error', `Failed to open ${file}`);
+                }
+            });
+        })
+    })
+})

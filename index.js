@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, autoUpdater, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const DiscordRPC = require('discord-rpc');
 const ws = require('windows-shortcuts');
 const os = require('os')
@@ -20,8 +20,8 @@ if (data.DesktopShortcutPlaced === false) {
         fs.unlinkSync(path.join(os.homedir(), "Desktop", "OSFR Launcher.lnk"));
     }
     ws.create(path.join(os.homedir(), "Desktop", "OSFR Launcher.lnk"), {
-        target: path.join(__dirname, "../../launcher.exe"),
-        desc: "A Free Realms launcher made by Lillious for the OSFR community",
+        target: path.join(__dirname, "../../OSFRLauncher.exe"),
+        desc: "A Launcher For Open-Source-Free-Realms",
         icon: path.join(__dirname, "../../resources/app/src/www/img/icon.ico"),
         admin: false,
         workingDir: path.join(__dirname, "../../"),
@@ -32,7 +32,6 @@ if (data.DesktopShortcutPlaced === false) {
 }
 
 fs.writeFileSync(path.join(__dirname, 'settings.json'), JSON.stringify(data, null, 4));
-
 let win;
 const createWindow = () => {
     win = new BrowserWindow({
@@ -94,12 +93,9 @@ ipcMain.on('maximize', () => {
 });
 
 const clientId = '1104553583816474744';
-
 DiscordRPC.register(clientId);
-
 const rpc = new DiscordRPC.Client({ transport: 'ipc' });
 const startTimestamp = new Date();
-
 async function setActivity() {
   if (!rpc || !win) {
     return;
