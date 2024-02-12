@@ -50,6 +50,8 @@ button {
     z-index: 1000;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
     height: 35px;
+    max-height: 35px;
+    -webkit-app-region: drag;
     -webkit-user-select: none;
     user-select: none;
 }
@@ -60,6 +62,7 @@ button {
     font-size: 8px;
     margin-right: 5px;
     font-weight: bold;
+    -webkit-app-region: no-drag;
 }
 #titlebar #icons {
     float: right;
