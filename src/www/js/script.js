@@ -627,6 +627,7 @@ clearConsole.addEventListener('click', async () => {
 });
 
 playbtn.addEventListener('click', async () => {
+    if (serverbtn.innerText == 'Start Server') return Notification.show('error', 'Please start the server first');
     if (playbtn.innerText != 'Play') return Notification.show('error', 'FreeRealms is already running');
     var username = document.getElementById('username').value;
     var guid = document.getElementById('genderrace').value || 0;
