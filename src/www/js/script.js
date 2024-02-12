@@ -171,7 +171,7 @@ function CheckRunningTasks () {
 
 setInterval(() => {
     CheckRunningTasks();
-}, 10000);
+}, 5000);
 function log(mode, message) {
     if (!fs.existsSync(path.join(__dirname, '..', '..', 'logs'))) {
         fs.mkdirSync(path.join(__dirname, '..', '..', 'logs'), { recursive: true });

@@ -6,10 +6,10 @@
   "scripts": {
     "start": "electron .",
     "clean": "rimraf release/ && rimraf logs/ && rimraf settings.json && rimraf temp-update/",
-    "uglifyjs": "uglifyjs-folder release/launcher-win32-x64/resources/app -eo release/launcher-win32-x64/resources/app -m -r -x .js",
+    "uglifyjs": "uglifyjs-folder release/OSFRLauncher-win32-x64/resources/app -eo release/OSFRLauncher-win32-x64/resources/app -m -r -x .js",
     "build": "npm run clean && electron-packager . --platform=win32 --arch=x64 --out=release --overwrite && npm run uglifyjs",
-    "build-zip": "npm run build && npm run zip && rimraf release/launcher-win32-x64",
-    "zip": "cd release/launcher-win32-x64 && bestzip ../launcher-win32-x64.zip * && cd ../.."
+    "build-zip": "npm run build && npm run zip && rimraf release/OSFRLauncher-win32-x64",
+    "zip": "cd release/OSFRLauncher-win32-x64 && bestzip ../OSFRLauncher-win32-x64.zip * && cd ../.."
   },
   "keywords": [],
   "author": "Lillious",
