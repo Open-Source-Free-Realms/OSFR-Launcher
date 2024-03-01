@@ -1,18 +1,19 @@
 # OSFR Launcher
 A launcher for the [Open-Source FreeRealms Project](https://github.com/Open-Source-Free-Realms/OpenSourceFreeRealms)
-![Alt text](https://github.com/Lillious/OSFR-Launcher/blob/main/teaser.png?raw=true)
+
+![alt text](https://github.com/Open-Source-Free-Realms/OSFR-Launcher/blob/main/teaser.png?raw=true)
 
 # Install Instructions
 
-- Download **launcher-win32-x64.zip** from the [latest release](https://github.com/Open-Source-Free-Realms/OSFR-Launcher/releases/)
+- Download **OSFRLauncher-win32-x64.zip** from the [latest release](https://github.com/Open-Source-Free-Realms/OSFR-Launcher/releases/)
 
-- Extract **launcher-win32-x64.zip**
+- Extract **OSFRLauncher-win32-x64.zip**
 
-- Open the extracted **launcher-win32-x64** folder and run **launcher.exe**
+- Open the extracted **OSFRLauncher-win32-x64** folder and run **OSFRLauncher.exe**
 
 # Usage Instructions
 
-- Once **launcher.exe** is opened (see "Install Instructions"), Click **Install** - *This step can take a while depending on your setup*
+- Once **OSFRLauncher.exe** is opened. Click **Install** - *This step can take a while depending on your setup*
 - Click **Start Server** to start a local server - *This is also required to play locally*
 - Enter your **nickname** in the **Username** input field
 - Enter the **server ip** or **domain** in the **Server** input field - *This is only required if connecting externally and is not required for playing locally*
@@ -22,7 +23,7 @@ A launcher for the [Open-Source FreeRealms Project](https://github.com/Open-Sour
 # Compiling Instructions
 
 - Download the latest version of [NodeJS](https://nodejs.org/en/download/current)
-- Open Command Promt and navigate to project folder
+- Open Command Prompt and navigate to the project folder
 - type `npm i electron` and hit enter
 - then type `npx electron-packager . OSFRLauncher --overwrite --icon=src\www\img\icon.ico`
 
