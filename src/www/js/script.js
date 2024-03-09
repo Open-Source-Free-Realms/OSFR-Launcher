@@ -1,19 +1,17 @@
-const {
-  ipcRenderer
-} = require('electron');
+const { ipcRenderer } = require('electron');
 const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
 const fetch = require('node-fetch');
 const extract = require('extract-zip');
-const {
-  exec
-} = require('child_process');
+const { exec } = require('child_process');
 const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
 const closejsonprompt = document.getElementById('closejsonprompt');
+const closeinfoprompt = document.getElementById('closeinfoprompt');
 const opacitywindow = document.getElementById('opacity-window');
+const infowindow = document.getElementById('info-window');
 const os = require('os');
 const package = fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8');
 const data = JSON.parse(package);
@@ -102,6 +100,7 @@ const progressBarContainer = document.getElementById('progress-container');
 const progressBar = document.getElementById('progress');
 const progressText = document.getElementById('progress-text');
 const logbtn = document.getElementById('logs');
+const infobtn = document.getElementById('info');
 (function () {
   var old = console.log;
   const consoleContent = document.getElementById('console-content');
@@ -819,6 +818,18 @@ settingsbtn.addEventListener('click', async () => {
 closejsonprompt.addEventListener('click', async () => {
   jsonprompt.style.display = 'none';
   opacitywindow.style.display = 'none';
+});
+
+infobtn.addEventListener('click', async () => {
+  const containerinfo = document.getElementById('infolist');
+  containerinfo.innerHTML = '';
+  infoprompt.style.display = 'block';
+  infowindow.style.display = 'block';
+});
+
+closeinfoprompt.addEventListener('click', async () => {
+  infoprompt.style.display = 'none';
+  infowindow.style.display = 'none';
 });
 
 logbtn.addEventListener('click', async () => {
