@@ -136,8 +136,8 @@ p {
 }
 #version {
     position: absolute;
-    bottom: 0;
-    margin-left: 40px;
+    bottom: -6px;
+    margin-left: 90px;
     padding: 5px;
     color: #dcdcdc;
     font-weight: bold;
@@ -193,8 +193,8 @@ button:not(#minimize, #maximize, #close):disabled {
 #settings {
     transition: ease-in-out 0.3s;
     position: absolute;
-    bottom: -12px;
-    left: 10px;
+    bottom: -18px;
+    left: 20px;
     font-size: 28px;
     cursor: pointer;
 }
@@ -205,8 +205,8 @@ button:not(#minimize, #maximize, #close):disabled {
 #info {
     transition: ease-in-out 0.3s;
     position: absolute;
-    bottom: 22px;
-    left: 10px;
+    bottom: -18px;
+    left: 50px;
     font-size: 28px;
     cursor: pointer;
 }
