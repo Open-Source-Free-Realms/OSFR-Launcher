@@ -29,12 +29,16 @@
         <div id=title>Select a file</div>
         <div id=filelist></div>
     </div>
-    <div id=info-window></div>
-    <div id=infoprompt>
-        <div id=closeinfoprompt>✗</div>
+    <div id=error-window></div>
+    <div id=errorprompt>
+        <div id=closeerrorprompt>✗</div>
         <div id=title>Common Errors</div>
-        <div id=infolist></div>
-        <p id=infolist class=message>•  FreeRealms.exe is not recognized as an internal or external command? <a href="https://shorturl.at/kHN79" style="color:#dcdcdc;">By downloading directx9 will help resolve the problem!</p></a>
+        <div id=errorlist></div>
+        <hr>
+        <p>•  Failed to load role gateaway.dll? Unblock the geteaway.dll, by right clicking on properties, and tick 'unblock' > apply! Located in resources/app/Server </p>
+        <hr>
+        <p> •  FreeRealms.exe is not recognized as an internal or external command? <a href="https://shorturl.at/kHN79" style="color:#dcdcdc;">By downloading directx9 will help resolve the problem!</p></a>
+        <hr>
     </div>
     <div id=side-bar>
         <div id=menuitems>
@@ -45,7 +49,7 @@
             <button id=uninstall disabled>Uninstall</button>
             <button id=logs disabled>Logs</button>
             <p id=settings class=material-symbols-outlined>settings</p>
-            <p id=info class=material-symbols-outlined>info</p>
+            <p id="error" class=material-symbols-outlined>error</p>
         </div>
     </div>
     <div id=content>

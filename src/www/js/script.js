@@ -9,9 +9,9 @@ const close = document.getElementById('close');
 const minimize = document.getElementById('minimize');
 const maximize = document.getElementById('maximize');
 const closejsonprompt = document.getElementById('closejsonprompt');
-const closeinfoprompt = document.getElementById('closeinfoprompt');
+const closeerrorprompt = document.getElementById('closeerrorprompt');
 const opacitywindow = document.getElementById('opacity-window');
-const infowindow = document.getElementById('info-window');
+const errorwindow = document.getElementById('error-window');
 const os = require('os');
 const package = fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8');
 const data = JSON.parse(package);
@@ -100,7 +100,7 @@ const progressBarContainer = document.getElementById('progress-container');
 const progressBar = document.getElementById('progress');
 const progressText = document.getElementById('progress-text');
 const logbtn = document.getElementById('logs');
-const infobtn = document.getElementById('info');
+const errorbtn = document.getElementById('error');
 (function () {
   var old = console.log;
   const consoleContent = document.getElementById('console-content');
@@ -820,16 +820,16 @@ closejsonprompt.addEventListener('click', async () => {
   opacitywindow.style.display = 'none';
 });
 
-infobtn.addEventListener('click', async () => {
-  const containerinfo = document.getElementById('infolist');
-  containerinfo.innerHTML = '';
-  infoprompt.style.display = 'block';
-  infowindow.style.display = 'block';
+errorbtn.addEventListener('click', async () => {
+  const containererror = document.getElementById('errorlist');
+  containererror.innerHTML = '';
+  errorprompt.style.display = 'block';
+  errorwindow.style.display = 'block';
 });
 
-closeinfoprompt.addEventListener('click', async () => {
-  infoprompt.style.display = 'none';
-  infowindow.style.display = 'none';
+closeerrorprompt.addEventListener('click', async () => {
+  errorprompt.style.display = 'none';
+  errorwindow.style.display = 'none';
 });
 
 logbtn.addEventListener('click', async () => {

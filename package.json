@@ -1,6 +1,6 @@
 {
   "name": "osfrlauncher",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "A Launcher For Open-Source-Free-Realms",
   "main": "index.js",
   "scripts": {
