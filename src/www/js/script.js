@@ -101,6 +101,7 @@ const progressBar = document.getElementById('progress');
 const progressText = document.getElementById('progress-text');
 const logbtn = document.getElementById('logs');
 const errorbtn = document.getElementById('error');
+const updatebtn = document.getElementById('update');
 (function () {
   var old = console.log;
   const consoleContent = document.getElementById('console-content');
@@ -305,6 +306,11 @@ const File = {
 }
 
 // Checking for updates
+updatebtn.addEventListener('click', async () => {
+  CheckForUpdates();
+});
+
+function CheckForUpdates() {
 Notification.show('information', 'Checking For Updates')
 fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releases/latest")
   .then(res => res.json())
@@ -312,6 +318,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
     if (json.tag_name !== version) {
       Notification.show("warn", "Downloading Update");
       installbtn.disabled = true;
+      busy = true;
       download({
         url: json.assets[0].browser_download_url,
         fileName: "update.zip",
@@ -369,8 +376,6 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
               installbtn.disabled = false;
             }, 3000);
 
-          }).catch(() => {
-            Notification.show("error", "Failed to extract update");
           }).finally(() => {
             fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), {
               recursive: true,
@@ -400,6 +405,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
       }, 750);
     }
   });
+}
 
 installbtn.addEventListener('click', async () => {
   installbtn.disabled = true;
@@ -846,5 +852,5 @@ logbtn.addEventListener('click', async () => {
         }
       });
     })
+   })
   })
-})
