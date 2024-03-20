@@ -1,7 +1,9 @@
 const {
   app,
   BrowserWindow,
-  ipcMain
+  ipcMain,
+  autoUpdater,
+  dialog
 } = require('electron');
 const DiscordRPC = require('discord-rpc');
 const ws = require('windows-shortcuts');

@@ -375,6 +375,9 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
               ipcRenderer.send('restart');
               installbtn.disabled = false;
             }, 3000);
+            
+          }).catch(() => {
+            Notification.show("error", "Failed to extract update");
 
           }).finally(() => {
             fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), {
@@ -401,7 +404,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
       });
     } else {
       setTimeout(() => {
-        Notification.show("information", "No Updates Found");
+        Notification.show("success", "No Updates Were Found!");
       }, 750);
     }
   });
@@ -848,9 +851,9 @@ logbtn.addEventListener('click', async () => {
     logbtn.addEventListener('click', async () => {
       exec(`notepad ${path.join(__dirname, '..', '..', 'logs', file)}`, (err) => {
         if (err) {
-          Notification.show('error', `Failed to open ${file}`);
-        }
-      });
-    })
+        Notification.show('error', `Failed to open ${file}`);
+      }
+    });
    })
   })
+})
