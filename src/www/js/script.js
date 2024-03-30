@@ -16,10 +16,9 @@ const os = require('os');
 const package = fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8');
 const data = JSON.parse(package);
 const version = data.version;
-var busy = false;
-
 const versionhtml = document.getElementById('version');
-versionhtml.innerHTML = `Version ${version}`;
+versionhtml.innerHTML = `v${version}`;
+var busy = false;
 
 const Notification = {
   show(mode, message, verbose) {
@@ -72,13 +71,13 @@ window.addEventListener('keydown', async (e) => {
   } = e;
   if (key === 'F4' && altKey) {
     e.preventDefault();
-    Notification.show('warn', 'User attempted to close the application abnormally', true);
+    Notification.show('warn', 'User attempted to close the application Abnormally', true);
   }
 });
 close.addEventListener('click', async () => {
-  if (busy) return Notification.show('error', 'Application is busy, please wait');
+  if (busy) return Notification.show('error', 'Application is busy, Please wait');
   exec('taskkill /IM OSFRServer.exe /F', () => {
-    Notification.show('information', 'Application has been closed peacefully', true);
+    Notification.show('information', 'Application has been closed Peacefully', true);
     ipcRenderer.send('close');
   });
 });
@@ -89,37 +88,23 @@ minimize.addEventListener('click', async () => {
 maximize.addEventListener('click', async () => {
   ipcRenderer.send('maximize');
 });
+
 const playbtn = document.getElementById('play');
 const serverbtn = document.getElementById('server');
 const installbtn = document.getElementById('install');
-const reinstallbtn = document.getElementById('reinstall');
 const uninstallbtn = document.getElementById('uninstall');
-const clearConsole = document.getElementById('clearconsole');
 const settingsbtn = document.getElementById('settings');
 const progressBarContainer = document.getElementById('progress-container');
 const progressBar = document.getElementById('progress');
 const progressText = document.getElementById('progress-text');
-const logbtn = document.getElementById('logs');
+const logbtn = document.getElementById('folder');
 const errorbtn = document.getElementById('error');
 const updatebtn = document.getElementById('update');
-(function () {
-  var old = console.log;
-  const consoleContent = document.getElementById('console-content');
-  console.log = function (message) {
-    if (typeof message == 'object') {
-      consoleContent.innerHTML += (JSON && JSON.stringify ? JSON.stringify(message) : message) + '<br />';
-    } else {
-      consoleContent.innerHTML += message + '<br />';
-    }
-    consoleContent.scrollTop = consoleContent.scrollHeight;
-  }
-})();
 
 // Check if server is installed
 if (fs.existsSync(path.join(__dirname, '..', '..', 'Server'))) {
   installbtn.disabled = true;
   serverbtn.disabled = false;
-  reinstallbtn.disabled = false;
   uninstallbtn.disabled = false;
 }
 
@@ -127,20 +112,17 @@ if (fs.existsSync(path.join(__dirname, '..', '..', 'Server'))) {
 if (fs.existsSync(path.join(__dirname, '..', '..', 'Client'))) {
   installbtn.disabled = true;
   playbtn.disabled = false;
-  reinstallbtn.disabled = false;
   uninstallbtn.disabled = false;
 }
 
 if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server')) && (!fs.existsSync(path.join(__dirname, '..', '..',
     'Client')))) {
   installbtn.disabled = false;
-  reinstallbtn.disabled = true;
   uninstallbtn.disabled = true;
 }
 
 function disableAll() {
   installbtn.disabled = true;
-  reinstallbtn.disabled = true;
   uninstallbtn.disabled = true;
 }
 
@@ -160,22 +142,16 @@ function CheckRunningTasks() {
     if (stdout.includes('OSFRServer.exe')) {
       serverbtn.innerText = 'Stop Server';
       serverbtn.style.color = '#ed6a5e';
-      reinstallbtn.disabled = true;
-      uninstallbtn.disabled = true;
     } else {
       serverbtn.innerText = 'Start Server';
       serverbtn.style.color = '#dcdcdc';
-      if (fs.existsSync(path.join(__dirname, '..', '..', 'Server') || path.join(__dirname, '..', '..', 'Client'))) {
-        reinstallbtn.disabled = false;
-        uninstallbtn.disabled = false;
-      }
     }
     if (stdout.includes('FreeRealms.exe')) {
       playbtn.innerText = 'Playing';
-      playbtn.style.color = '#3f78c4';
+      playbtn.style.color = '#6aa84f';
     } else {
       playbtn.innerText = 'Play';
-      playbtn.style.color = '#dcdcdc';
+      playbtn.style.color = '#dcdcdc';    
     }
   }).catch((err) => {
     if (err) {
@@ -217,7 +193,6 @@ const ProgressBar = {
     this.show();
     progressBar.style.width = `${parseFloat(value)}%`;
     progressText.innerText = `${parseFloat(value)}%`;
-    reinstallbtn.disabled = true;
     uninstallbtn.disabled = true;
     if (value == 100) {
       setTimeout(() => {
@@ -307,7 +282,12 @@ const File = {
 
 // Checking for updates
 updatebtn.addEventListener('click', async () => {
+  const update = document.getElementById('update')
+  update.classList.add('updateonclick')
   CheckForUpdates();
+  setTimeout(() => {
+    update.classList.remove('updateonclick')
+  },750)
 });
 
 function CheckForUpdates() {
@@ -346,28 +326,28 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
                 overwrite: true
               });
             } catch (err) {
-              Notification.show("error", "Failed to copy update");
+              Notification.show("error", "Failed to copy Update");
             }
             try {
               fse.copySync(packageSrc, packageDest, {
                 overwrite: true
               });
             } catch (err) {
-              Notification.show("error", "Failed to copy update");
+              Notification.show("error", "Failed to copy Update");
             }
             try {
               fse.copySync(mainSrc, mainDest, {
                 overwrite: true
               });
             } catch (err) {
-              Notification.show("error", "Failed to copy update");
+              Notification.show("error", "Failed to copy Update");
             }
             try {
               fse.copySync(modulesSrc, modulesDest, {
                 overwrite: true
               });
             } catch (err) {
-              Notification.show("error", "Failed to copy update");
+              Notification.show("error", "Failed to copy Update");
             }
 
             Notification.show("success", "Update complete! Restarting");
@@ -377,7 +357,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
             }, 3000);
             
           }).catch(() => {
-            Notification.show("error", "Failed to extract update");
+            Notification.show("error", "Failed to extract Update");
 
           }).finally(() => {
             fs.rm(path.join(__dirname, '..', '..', '..', '..', 'update'), {
@@ -385,7 +365,7 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
               force: true
             }, (err) => {
               if (err) {
-                Notification.show("error", "Failed to remove temporary files");
+                Notification.show("error", "Failed to remove temporary Files");
               }
             });
             fs.rm(path.join(__dirname, '..', '..', '..', '..', 'temp-update'), {
@@ -393,13 +373,13 @@ fetch("https://api.github.com/repos/Open-Source-Free-Realms/OSFR-Launcher/releas
               force: true
             }, (err) => {
               if (err) {
-                Notification.show("error", "Failed to remove temporary files");
+                Notification.show("error", "Failed to remove temporary Files");
               }
             });
             busy = false;
           });
       }).catch(() => {
-        Notification.show("error", "Update download failed");
+        Notification.show("error", "Update download Failed");
         busy = false;
       });
     } else {
@@ -431,7 +411,7 @@ installbtn.addEventListener('click', async () => {
           force: true
         }, (err) => {
           if (err) {
-            Notification.show('error', 'Failed to remove temporary files');
+            Notification.show('error', 'Failed to remove temporary Files');
           }
         });
         rm(path.join(os.tmpdir(), 'directx9'), {
@@ -439,7 +419,7 @@ installbtn.addEventListener('click', async () => {
           force: true
         }, (err) => {
           if (err) {
-            Notification.show('error', 'Failed to remove temporary files');
+            Notification.show('error', 'Failed to remove temporary Files');
           }
         });
       });
@@ -502,16 +482,12 @@ function directx() {
   });
 }
 
-reinstallbtn.addEventListener('click', async () => {
-  reinstall();
-});
-
 uninstallbtn.addEventListener('click', async () => {
   uninstall().then(() => {
-    Notification.show('success', 'Uninstallation complete');
+    Notification.show('success', 'Uninstallation Complete');
   }).catch((err) => {
     if (err) {
-      Notification.show('error', 'Failed to uninstall');
+      Notification.show('error', 'Failed to Uninstall');
     }
   }).finally(() => {
     installbtn.disabled = false;
@@ -531,7 +507,7 @@ function install() {
       force: true
     }, (err) => {
       if (err) {
-        Notification.show('error', 'Failed to remove old files');
+        Notification.show('error', 'Failed to remove old Files');
       }
     });
     fs.rm(path.join(__dirname, '..', '..', 'Client'), {
@@ -539,7 +515,7 @@ function install() {
       force: true
     }, (err) => {
       if (err) {
-        Notification.show('error', 'Failed to remove old files');
+        Notification.show('error', 'Failed to remove old Files');
       }
     });
   }
@@ -562,7 +538,7 @@ function install() {
         busy = false;
       }).catch((err) => {
         if (err) {
-          reinstallbtn.disabled = false;
+          uninstallbtn.disabled = false;
         }
       }).finally(() => {
         fs.rm(path.join(os.tmpdir(), 'OSFRServer'), {
@@ -573,10 +549,8 @@ function install() {
       });
   }).catch((err) => {
     if (err) {
-      reinstallbtn.disabled = false;
       uninstallbtn.disabled = false;
-      logbtn.disabled = false;
-      Notification.show('error', 'Failed to download server files');
+      Notification.show('error', 'Failed to download server Files');
       ProgressBar.hide();
       busy = false;
     }
@@ -597,6 +571,7 @@ function install() {
         }).then(() => {
           Notification.show('success', 'Client Installation Complete');
           busy = false;
+          uninstallbtn.disabled = false;
         }).catch((err) => {
           if (err) {}
         }).finally(() => {
@@ -606,24 +581,16 @@ function install() {
           }, () => {});
           playbtn.disabled = false;
           serverbtn.disabled = false;
-          reinstallbtn.disabled = false;
-          uninstallbtn.disabled = false;
         });
     }).catch((err) => {
       if (err) {
-        logbtn.disabled = false;
-        reinstallbtn.disabled = false;
         uninstallbtn.disabled = false;
-        Notification.show('error', 'Failed to download client files');
+        Notification.show('error', 'Failed to download Client files');
         ProgressBar.hide();
         busy = false;
       }
     });
   });
-}
-
-function reinstall() {
-  install();
 }
 
 function uninstall() {
@@ -655,28 +622,28 @@ serverbtn.addEventListener('click', async () => {
       cwd: path.join(__dirname, '..', '..', 'Server/Server')
     }, () => {});
     process.stderr.on('data', (data) => {
-      Notification.show('error', `An error occured, check logs for more information`);
+      Notification.show('error', `An error occured, Check logs for more Information`);
       Notification.show('error', data, true);
     });
     process.stdout.on('data', (data) => {
       console.log(data);
       if (data.includes('Started listening!')) {
-        Notification.show('success', `Server started`);
+        Notification.show('success', `Server Started`);
         return;
       }
       if (data.includes('Login Request')) {
         const ticket = data.match(/Ticket:.*-/g)[0].replace('Ticket:', '').replace('-', '');
-        Notification.show('success', `${ticket} has connected`);
+        Notification.show('success', `${ticket} has Connected`);
       }
 
       if (data.includes('Attempting to dispose')) {
         // Parse out the username with the prefix 'Attempting to dispose of "' and ending with a double quote
         const ticket = data.match(/Attempting to dispose of ".*"/g)[0].replace('Attempting to dispose of "',
           '').replace('"', '');
-        Notification.show('error', `${ticket} has disconnected`);
+        Notification.show('error', `${ticket} has Disconnected`);
       }
       if (data.includes('Invalid configuration!')) {
-        Notification.show('error', `Invalid configuration file`);
+        Notification.show('error', `Invalid configuration File`);
         process.kill();
         return;
       }
@@ -687,28 +654,22 @@ serverbtn.addEventListener('click', async () => {
   } else if (serverbtn.innerText == 'Stop Server') {
     exec('taskkill /IM OSFRServer.exe /F', (err) => {
       if (err) {
-        Notification.show('error', 'Failed to stop server');
+        Notification.show('error', 'Failed to the stop Server');
       }
-      Notification.show('success', 'Server stopped');
+      Notification.show('success', 'Server Stopped');
     });
   }
 });
 
-clearConsole.addEventListener('click', async () => {
-  const consoleContent = document.getElementById('console-content');
-  consoleContent.innerHTML = '';
-  Notification.show('information', 'Console cleared');
-});
-
 playbtn.addEventListener('click', async () => {
-  if (playbtn.innerText != 'Play') return Notification.show('error', 'FreeRealms is already running');
+  if (playbtn.innerText != 'Play') return Notification.show('error', 'FreeRealms is already Running');
   var username = document.getElementById('username').value;
   var guid = document.getElementById('genderrace').value || 0;
   if (guid == 0) guid = Math.floor(Math.random() * (5 - 2 + 1)) + 2;
   username = username.replace(/\s/g, '');
   username = username.charAt(0).toUpperCase() + username.slice(1);
   var server = document.getElementById('serverip').value || '127.0.0.1';
-  if (!username) return Notification.show('error', 'Please enter a username');
+  if (!username) return Notification.show('error', 'Please enter a Username');
   const args =
     `inifile=ClientConfig.ini Guid=${guid} Internationalization:Locale=8 ShowMemberLoadingScreen=0 Country=US key=m80HqsRO9i4PjJSCOasVMg== CasSessionId=Jk6TeiRMc4Ba38NO`
   const process = exec(`FreeRealms.exe ${args} Server=${server}:20260 Ticket=${username}`, {
@@ -800,11 +761,11 @@ settingsbtn.addEventListener('click', async () => {
   jsonprompt.style.display = 'block';
   opacitywindow.style.display = 'block';
   if (!fs.existsSync(path.join(__dirname, '..', '..', 'Server/Server/Customize/PacketSendSelfToClient/')))
-  return Notification.show('error', 'No files found');
+  return Notification.show('error', 'No files Found');
   const files = fs.readdirSync(path.join(__dirname, '..', '..',
     'Server/Server/Customize/PacketSendSelfToClient/'));
   const jsonFiles = files.filter(file => file.endsWith('.json'));
-  if (!jsonFiles.length) return Notification.show('error', 'No files found');
+  if (!jsonFiles.length) return Notification.show('error', 'No files Found');
   jsonFiles.forEach(file => {
     const item = document.createElement('div');
     item.classList.add('item');
@@ -846,7 +807,7 @@ logbtn.addEventListener('click', async () => {
     'Unable to locate Log.txt');
   const files = fs.readdirSync(path.join(__dirname, '..', '..', 'logs/'));
   const logFiles = files.filter(file => file.endsWith('.txt'));
-  if (!logFiles.length) return Notification.show('error', 'No files found');
+  if (!logFiles.length) return Notification.show('error', 'No files Found');
   logFiles.forEach(file => {
     logbtn.addEventListener('click', async () => {
       exec(`notepad ${path.join(__dirname, '..', '..', 'logs', file)}`, (err) => {

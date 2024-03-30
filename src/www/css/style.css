@@ -48,7 +48,8 @@ button {
     left: 0;
     right: 0;
     z-index: 1000;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);
+    background: rgba(24, 31, 39, 0.3);
     height: 35px;
     max-height: 35px;
     -webkit-app-region: drag;
@@ -136,10 +137,11 @@ p {
 }
 #version {
     position: absolute;
-    bottom: -13px;
-    margin-left: 100px;
+    bottom: -12.7px;
+    margin-left: 97px;
     padding: 5px;
     color: #dcdcdc;
+    font-weight: bold;
 }
 button:not(#minimize, #maximize, #close) {
     transition: ease-in-out 0.3s;
@@ -165,7 +167,7 @@ button:not(#minimize, #maximize, #close):disabled {
     position: absolute;
     z-index: -1000;
     left: 0;
-    top: 38px;
+    top: 35px;
     bottom: 0;
     width: 200px;
     box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.5);
@@ -193,7 +195,7 @@ button:not(#minimize, #maximize, #close):disabled {
     transition: ease-in-out 0.3s;
     position: absolute;
     bottom: -18px;
-    left: 10px;
+    left: 35px;
     font-size: 28px;
     cursor: pointer;
 }
@@ -205,7 +207,7 @@ button:not(#minimize, #maximize, #close):disabled {
     transition: ease-in-out 0.3s;
     position: absolute;
     bottom: -18px;
-    left: 40px;
+    left: 95px;
     font-size: 28px;
     cursor: pointer;
 }
@@ -267,43 +269,6 @@ button:not(#minimize, #maximize, #close):disabled {
 }
 .notification-bar .notification-close:hover {
     color: #ed6a5e;
-    cursor: pointer;
-}
-#console {
-    position: absolute;
-    bottom: 30px;
-    left: 11px;
-    right: 10px;
-    height: 40%;
-    background: rgba(24, 31, 39, 0.5);
-    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-#console #console-content {
-    color: #dcdcdc;
-    overflow-y: scroll;
-    word-wrap: break-word;
-    height: 98%;
-    margin-bottom: 5px;
-    margin-left: 5px;
-    margin-right: 5px;
-    -webkit-mask-image: -webkit-gradient(linear, left 30%, left top, from(rgba(0,0,0,0.5)), to(rgba(0,0,0,0)));
-    mask-image: linear-gradient(to top, rgba(0,0,0,0.5), rgba(0,0,0,0));
-    -webkit-user-select: text;
-    user-select: text;
-}
-#console #console-content p {
-    border-bottom: 1px solid #2a3038;
-}
-#clearconsole {
-    position: absolute;
-    z-index: 100;
-    top: 5px;
-    right: 10px;
-    color: #ed6a5e;
-    font-size: 18px;
-}
-#clearconsole:hover {
-    color: #be544a;
     cursor: pointer;
 }
 input {
@@ -575,12 +540,20 @@ hr {
 #update {
     position: absolute;
     bottom: -18px;
-    left: 70px;
+    left: 65px;
     font-size: 28px;
     cursor: pointer;
 }
 
-#update:hover {
+#update.updateonclick {
     transition: ease-in-out 0.3s;
     rotate: 358deg;
+}
+
+#folder {
+    position: absolute;
+    bottom: -18px;
+    left: 127px;
+    font-size: 28px;
+    cursor: pointer;
 }
