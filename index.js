@@ -98,7 +98,7 @@ ipcMain.on('maximize', () => {
   }
 });
 
-const clientId = '1104553583816474744';
+const clientId = '1223728876199608410';
 DiscordRPC.register(clientId);
 const rpc = new DiscordRPC.Client({
   transport: 'ipc'
@@ -110,9 +110,9 @@ async function setActivity() {
   }
 
   rpc.setActivity({
-    details: `Hanging out in the launcher`,
+    details: `Hanging out in the Launcher`,
     startTimestamp,
-    largeImageKey: 'ofsr',
+    largeImageKey: 'osfr',
     instance: false,
   });
 }
