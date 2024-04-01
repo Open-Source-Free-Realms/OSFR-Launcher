@@ -17,15 +17,15 @@
   "dependencies": {
     "discord-rpc": "^4.0.1",
     "extract-zip": "^2.0.1",
-    "fs-extra": "^11.1.1",
-    "node-fetch": "^2.6.11",
+    "fs-extra": "^11.2.0",
+    "node-fetch": "^3.3.2",
     "windows-shortcuts": "^0.1.6"
   },
   "devDependencies": {
     "bestzip": "^2.2.1",
-    "electron": "^25.9.8",
-    "electron-packager": "^17.1.1",
-    "rimraf": "^5.0.1",
-    "uglifyjs-folder": "^3.2.0"
+    "electron": "^29.1.6",
+    "electron-packager": "^17.1.2",
+    "rimraf": "^5.0.5",
+    "uglifyjs-folder": "^3.3.0"
   }
 }
